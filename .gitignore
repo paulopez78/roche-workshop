@@ -1,0 +1,8 @@
+*.pptx
+.idea
+bin
+obj
+.DS_Store
+*.deb
+*.user
+**/postgresql/data
