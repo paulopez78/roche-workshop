@@ -15,34 +15,41 @@ namespace MeetupEvents
         }
 
         [HttpPost]
-        public IActionResult CreateMeetup(MeetupEvent meetupEvent)
-        {
-            _database.Add(meetupEvent);
-            return Ok();
-        }
+        public IActionResult CreateMeetup(MeetupEvent meetupEvent) =>
+            _database.Add(meetupEvent)
+                ? Ok()
+                : BadRequest($"Meetup id {meetupEvent.Id} already exists");
 
         [HttpPut("{id:Guid}")]
         public IActionResult Publish(Guid id)
         {
             var meetup = _database.Get(id);
-            meetup.Published = true;
+
+            if (meetup is null)
+                return NotFound();
+
+            // meetup.Published = true;
+            // var newMeetup = new MeetupEvent(meetup.Id, meetup.Title, true);
+
+            _database.Replace(meetup, meetup with {Published = true});
+
             return Ok();
         }
 
         [HttpDelete("{id:Guid}")]
-        public IActionResult Cancel(Guid id)
-        {
-            _database.Remove(id);
-            return Ok();
-        }
+        public IActionResult Cancel(Guid id) =>
+            _database.Remove(id)
+                ? Ok()
+                : NotFound();
 
         [HttpGet("{id:Guid}")]
-        public IActionResult Get(Guid id)
-        {
-            var meetup = _database.Get(id);
-            return Ok(meetup);
-        }
-        
+        public IActionResult Get(Guid id) =>
+            _database.Get(id) switch
+            {
+                null            => NotFound(),
+                var meetupEvent => Ok(meetupEvent)
+            };
+
         [HttpGet]
         public IActionResult Get()
         {
@@ -51,10 +58,6 @@ namespace MeetupEvents
         }
     }
 
-    public class MeetupEvent
-    {
-        public Guid   Id        { get; set; }
-        public string Title     { get; set; }
-        public bool   Published { get; set; }
-    }
+#nullable disable
+    public record MeetupEvent(Guid Id, string Title, bool Published = false);
 }

@@ -37,6 +37,23 @@ namespace MeetupEvents.Test
         }
 
         [Fact]
+        public async Task Should_Return_BadRequest_Create_Meetup()
+        {
+            // arrange
+            var meetupId = Guid.NewGuid();
+            var title    = "Microservices Failures";
+            await CreateMeetup(meetupId, title);
+
+            // act
+            var response = await CreateMeetup(meetupId, title);
+
+            // assert 
+            var meetup = await Get(meetupId);
+            Assert.Equal(title, meetup.Title);
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        }
+
+        [Fact]
         public async Task Should_Publish_Meetup()
         {
             // arrange
@@ -65,9 +82,21 @@ namespace MeetupEvents.Test
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }
 
+        [Fact]
+        public async Task Should_Return_NotFound_Cancel_Meetup()
+        {
+            // arrange
+            var meetupId = Guid.NewGuid();
+
+            // act
+            var response = await Cancel(meetupId);
+
+            // assert 
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        }
+
         Task<HttpResponseMessage> CreateMeetup(Guid id, string title = "Microservices Failures") =>
-            Client.PostAsJsonAsync("/api/meetup/events",
-                new MeetupEvent {Id = id, Title = title, Published = false});
+            Client.PostAsJsonAsync("/api/meetup/events", new MeetupEvent(id,title));
 
         Task<HttpResponseMessage> Publish(Guid id) =>
             Client.PutAsync($"/api/meetup/events/{id}", null);
