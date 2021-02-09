@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -15,7 +16,12 @@ namespace MeetupEvents
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddSingleton<InMemoryDb>();
+            var connectionString = Configuration["ConnectionString"];
+            services.AddDbContext<MeetupEventsDbContext>(options =>
+            {
+                options.UseNpgsql(connectionString);
+            });
+            services.AddScoped<MeetupEventsRepository>();
             services.AddControllers();
             services.AddSwaggerGen(c =>
             {

@@ -1,6 +1,5 @@
-﻿using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.AspNetCore.TestHost;
+﻿using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Xunit.Abstractions;
@@ -19,6 +18,15 @@ namespace MeetupEvents.Test
             {
                 logging.ClearProviders();
                 logging.AddXUnit(Output);
+            });
+
+            builder.ConfigureServices(services =>
+            {
+                using var scope = services.BuildServiceProvider().CreateScope();
+
+                var dbContext = scope.ServiceProvider.GetRequiredService<MeetupEventsDbContext>();
+                dbContext.Database.EnsureDeleted();
+                dbContext.Database.EnsureCreated();
             });
 
             return builder;

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MeetupEvents
@@ -7,57 +8,59 @@ namespace MeetupEvents
     [Route("/api/meetup/events")]
     public class MeetupEventApi : ControllerBase
     {
-        readonly InMemoryDb _database;
+        readonly MeetupEventsRepository _database;
 
-        public MeetupEventApi(InMemoryDb db)
+        public MeetupEventApi(MeetupEventsRepository db)
         {
             _database = db;
         }
 
         [HttpPost]
-        public IActionResult CreateMeetup(MeetupEvent meetupEvent) =>
-            _database.Add(meetupEvent)
+        public async Task<IActionResult> CreateMeetup(MeetupEvent meetupEvent) =>
+            await _database.Add(meetupEvent)
                 ? Ok()
                 : BadRequest($"Meetup id {meetupEvent.Id} already exists");
 
         [HttpPut("{id:Guid}")]
-        public IActionResult Publish(Guid id)
+        public async Task<IActionResult> Publish(Guid id)
         {
-            var meetup = _database.Get(id);
+            var meetup = await _database.Get(id);
 
             if (meetup is null)
                 return NotFound();
 
-            // meetup.Published = true;
-            // var newMeetup = new MeetupEvent(meetup.Id, meetup.Title, true);
+            meetup.Published = true;
 
-            _database.Replace(meetup, meetup with {Published = true});
+            await _database.Commit();
 
             return Ok();
         }
 
         [HttpDelete("{id:Guid}")]
-        public IActionResult Cancel(Guid id) =>
-            _database.Remove(id)
+        public async Task<IActionResult> Cancel(Guid id) =>
+            await _database.Remove(id)
                 ? Ok()
                 : NotFound();
 
         [HttpGet("{id:Guid}")]
-        public IActionResult Get(Guid id) =>
-            _database.Get(id) switch
+        public async Task<IActionResult> Get(Guid id) =>
+            await _database.Get(id) switch
             {
-                null            => NotFound(),
+                null => NotFound(),
                 var meetupEvent => Ok(meetupEvent)
             };
 
         [HttpGet]
-        public IActionResult Get()
+        public async Task<IActionResult> Get()
         {
-            var meetup = _database.GetAll();
+            var meetup = await _database.GetAll();
             return Ok(meetup);
         }
     }
 
 #nullable disable
-    public record MeetupEvent(Guid Id, string Title, bool Published = false);
+    public record MeetupEvent(Guid Id, string Title, int Capacity = 10)
+    {
+        public bool Published { get; set; }
+    }
 }
