@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+option csharp_namespace = "MeetupEvents.Contracts.Commands.V1";
+
+package meetup_events;
+
+service MeetupEventsService{
+  rpc CreateMeetup(Create) returns (CommandReply);
+  rpc PublishMeetup(Publish) returns (CommandReply);
+  rpc CancelMeetup(Cancel) returns (CommandReply);
+}
+
+message Create{
+  string id = 1;
+  string title = 3;
+  int32 capacity = 2;
+}
+
+message Publish {
+  string id = 1;
+}
+
+message Cancel{
+  string id = 1;
+}
+
+message CommandReply{
+  string id = 1;
+}

@@ -1,3 +1,5 @@
+using MeetupEvents.Application;
+using MeetupEvents.Infrastructure;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
@@ -21,7 +23,8 @@ namespace MeetupEvents
             {
                 options.UseNpgsql(connectionString);
             });
-            services.AddScoped<MeetupEventsRepository>();
+            services.AddScoped<MeetupEventsApplicationService>();
+            services.AddGrpc();
             services.AddControllers();
             services.AddSwaggerGen(c =>
             {
@@ -39,7 +42,11 @@ namespace MeetupEvents
             }
 
             app.UseRouting();
-            app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapGrpcService<MeetupEventsGrpcService>();
+                endpoints.MapControllers();
+            });
         }
     }
 }
