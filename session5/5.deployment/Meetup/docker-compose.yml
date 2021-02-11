@@ -1,0 +1,18 @@
+version: "3.7"
+
+services:
+  meetup-events: 
+    image: paulopez/meetup-events:2.0
+    restart: always
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__MeetupEvents: "Host=database;Port=5432;Database=meetupevents;Username=postgres;Password=mysecretpassword"
+    ports:
+      - 5000:80
+
+networks:
+  default:
+    name: meetup-network
