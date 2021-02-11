@@ -1,8 +1,6 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using MeetupEvents.Framework;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using MeetupEvents.Infrastructure;
 using static MeetupEvents.Contracts.MeetupCommands.V1;
 
@@ -15,7 +13,7 @@ namespace MeetupEvents.Application
         readonly IApplicationService _appService;
 
         public MeetupEventsHttpApi(ApplicationServiceBuilder<MeetupEventsApplicationService> builder) =>
-            _appService = builder.Build();
+            _appService = builder.WithOutbox().WithExceptionLogging().Build();
 
         [HttpPost]
         public Task<IActionResult> CreateMeetup(Create command) =>

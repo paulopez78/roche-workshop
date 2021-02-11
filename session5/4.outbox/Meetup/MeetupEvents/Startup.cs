@@ -1,4 +1,6 @@
 using System;
+using GreenPipes;
+using MassTransit;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
@@ -37,6 +39,33 @@ namespace MeetupEvents
                 GetAttendantListId(() => new NpgsqlConnection(connectionString), id)
             );
             services.AddSingleton(new MeetupEventQueries(() => new NpgsqlConnection(connectionString)));
+
+            services.AddHostedService<OutboxProcessor>();
+
+            services.AddMassTransit(x =>
+            {
+                x.AddConsumer<AttendantListMassTransitConsumer>();
+                x.UsingRabbitMq((context, cfg) =>
+                {
+                    cfg.Host(Configuration.GetValue("RabbitMQ:Host", "localhost"), "/", h =>
+                    {
+                        h.Username("guest");
+                        h.Password("guest");
+                    });
+
+                    cfg.UseMessageRetry(r =>
+                    {
+                        r.Interval(5, TimeSpan.FromMilliseconds(100));
+                        // r.Immediate(10);
+                        r.Handle<InvalidOperationException>();
+                        r.Handle<NpgsqlException>();
+                        r.Ignore<ArgumentException>();
+                    });
+
+                    cfg.ReceiveEndpoint("attendant-list", e => e.Consumer<AttendantListMassTransitConsumer>(context));
+                });
+            });
+            services.AddMassTransitHostedService();
 
             services.AddControllers();
             services.AddSwaggerGen(c =>

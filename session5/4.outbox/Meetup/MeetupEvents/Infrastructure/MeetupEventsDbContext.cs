@@ -1,8 +1,8 @@
 ﻿#nullable disable
 using System;
-using MeetupEvents.Domain;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using MeetupEvents.Domain;
 
 namespace MeetupEvents.Infrastructure
 {
@@ -48,6 +48,15 @@ namespace MeetupEvents.Infrastructure
             });
 
             modelBuilder.Entity<Attendant>(b =>
+            {
+                b.Property<Guid>("Id")
+                    .HasColumnType("uuid")
+                    .ValueGeneratedOnAdd();
+
+                b.HasKey("Id");
+            });
+
+            modelBuilder.Entity<Outbox>(b =>
             {
                 b.Property<Guid>("Id")
                     .HasColumnType("uuid")

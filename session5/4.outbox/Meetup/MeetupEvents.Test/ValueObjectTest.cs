@@ -13,7 +13,7 @@ namespace MeetupEvents.Test
             var now = DateTime.UtcNow;
 
             // make illegal state irrepresentable 
-            var isDateTime = DateTime.TryParse("this is not a datetime", out var result);
+            var isDateTime = DateTime.TryParse("this is not a datetime", out _);
             Assert.False(isDateTime);
 
             var dateTime1 = now.AddDays(1).AddMinutes(1);

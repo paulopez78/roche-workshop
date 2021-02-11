@@ -126,7 +126,7 @@ namespace MeetupEvents.Test
             publish.Should().ThrowExactly<InvalidOperationException>();
         }
 
-        MeetupEventAggregate CreateMeetup(int capacity = 10)
+        MeetupEventAggregate CreateMeetup()
         {
             var meetup = new MeetupEventAggregate();
             meetup.Create(NewGuid(), NewGuid(), Details.From("Microservices failures", "This is a meetup about ..."));

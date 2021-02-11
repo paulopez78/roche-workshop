@@ -1,29 +1,42 @@
-﻿using static System.Guid;
+﻿using System;
+using static System.Guid;
 using System.Threading.Tasks;
+using MassTransit;
 using MeetupEvents.Framework;
 using MeetupEvents.Infrastructure;
+using Npgsql;
 using static MeetupEvents.Contracts.MeetupEvents.V1;
 using static MeetupEvents.Contracts.AttendantListCommands.V1;
 
 namespace MeetupEvents.Application
 {
-    public class AttendantListEventsHandler :
-        IEventHandler<MeetupCreated>,
-        IEventHandler<Published>,
-        IEventHandler<Canceled>
+    public class AttendantListMassTransitConsumer :
+        IConsumer<MeetupCreated>,
+        IConsumer<Published>,
+        IConsumer<Canceled>
     {
         readonly IApplicationService _applicationService;
 
-        public AttendantListEventsHandler(ApplicationServiceBuilder<AttendantListApplicationService> builder) =>
+        public AttendantListMassTransitConsumer(ApplicationServiceBuilder<AttendantListApplicationService> builder) =>
             _applicationService = builder.Build();
 
-        public Task Handle(MeetupCreated created) =>
-            _applicationService.Handle(new CreateAttendantList(NewGuid(), created.Id, 10));
+        public Task Consume(ConsumeContext<MeetupCreated> context)
+        {
+            // TransientException();
+            return _applicationService.Handle(new CreateAttendantList(NewGuid(), context.Message.Id, 10));
+        }
 
-        public Task Handle(Published created) =>
-            _applicationService.Handle(new Open(created.Id));
+        public Task Consume(ConsumeContext<Published> context) =>
+            _applicationService.Handle(new Open(context.Message.Id));
 
-        public Task Handle(Canceled created) =>
-            _applicationService.Handle(new Close(created.Id));
+        public Task Consume(ConsumeContext<Canceled> context) =>
+            _applicationService.Handle(new Close(context.Message.Id));
+
+        void TransientException()
+        {
+            var random = new Random();
+            if (random.Next(1, 10) > 5)
+                throw new NpgsqlException();
+        }
     }
 }

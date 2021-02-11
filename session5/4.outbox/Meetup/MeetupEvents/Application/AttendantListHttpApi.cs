@@ -13,7 +13,7 @@ namespace MeetupEvents.Application
         readonly IApplicationService _appService;
 
         public AttendantListHttpApi(ApplicationServiceBuilder<AttendantListApplicationService> builder) =>
-            _appService = builder.Build();
+            _appService = builder.WithOutbox().WithExceptionLogging().Build();
 
         [HttpPost]
         public Task<IActionResult> Create(CreateAttendantList command) =>

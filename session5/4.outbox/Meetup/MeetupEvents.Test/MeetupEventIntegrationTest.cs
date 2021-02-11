@@ -115,8 +115,8 @@ namespace MeetupEvents.Test
             await Publish(meetupId);
             await ReduceCapacity(meetupId, byNumber: 8);
 
-            // await CreateAttendantList(NewGuid(), meetupId, capacity: 2);
-            // await Open(meetupId);
+            // eventual consistency, we should retry till is attendant list is opened
+            await Task.Delay(1000);
 
             var bob   = NewGuid();
             var alice = NewGuid();
@@ -147,8 +147,9 @@ namespace MeetupEvents.Test
             await Schedule(meetupId);
             await MakeOnline(meetupId);
             await Publish(meetupId);
-            // await CreateAttendantList(NewGuid(), meetupId, capacity: 2);
-            // await Open(meetupId);
+
+            // eventual consistency, we should retry till is attendant list is opened
+            await Task.Delay(1000);
 
             var bob   = NewGuid();
             var title = "Microservices Benefits";
