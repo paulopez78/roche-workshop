@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>net5.0</TargetFramework>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="5.0.2" />
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="5.6.3" />
+        <PackageReference Include="Grpc.AspNetCore" Version="2.34.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Protobuf Include="Protos\meetupevents.proto">
+        <GrpcServices>All</GrpcServices>
+      </Protobuf>
+    </ItemGroup>
+
+</Project>
