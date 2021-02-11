@@ -1,6 +1,5 @@
 ﻿using Grpc.Net.Client;
-using MeetupEvents.Application;
-using MeetupEvents.Contracts.Commands.V1;
+using MeetupEvents.Contracts.Commands.V2;
 using MeetupEvents.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;

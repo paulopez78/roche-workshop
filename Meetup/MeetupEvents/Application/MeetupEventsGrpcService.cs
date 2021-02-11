@@ -1,7 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using Grpc.Core;
-using MeetupEvents.Contracts.Commands.V1;
+using MeetupEvents.Contracts.Commands.V2;
 using MeetupEvents.Infrastructure;
 using Microsoft.Extensions.Logging;
 

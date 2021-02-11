@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-option csharp_namespace = "MeetupEvents.Contracts.Commands.V1";
+option csharp_namespace = "MeetupEvents.Contracts.Commands.V2";
 
 package meetup_events;
 
@@ -12,8 +12,9 @@ service MeetupEventsService{
 
 message Create{
   string id = 1;
-  string title = 3;
-  int32 capacity = 2;
+  string title = 2;
+  string description= 3;
+  int32 capacity = 4;
 }
 
 message Publish {
