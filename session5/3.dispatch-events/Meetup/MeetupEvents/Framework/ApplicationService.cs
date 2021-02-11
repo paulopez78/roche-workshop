@@ -49,6 +49,9 @@ namespace MeetupEvents.Framework
             return await Commit(aggregate);
         }
 
+        protected async Task<CommandResult> Handle(Task<Guid> getId, Action<TAggregate> handler) =>
+            await Handle(await getId, handler);
+
         protected virtual Task<TAggregate?> Load(Guid id, DbContext repository)
             => repository.Set<TAggregate>().SingleOrDefaultAsync(x => x.Id == id)!;
 

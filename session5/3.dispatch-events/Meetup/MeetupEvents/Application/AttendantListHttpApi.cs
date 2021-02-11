@@ -16,7 +16,7 @@ namespace MeetupEvents.Application
             _appService = builder.Build();
 
         [HttpPost]
-        public Task<IActionResult> Create(Create command) =>
+        public Task<IActionResult> Create(CreateAttendantList command) =>
             _appService.HandleHttp(command);
 
         [HttpPut("open")]

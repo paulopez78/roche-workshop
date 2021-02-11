@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Threading.Tasks;
-using MeetupEvents.Application;
 using MeetupEvents.Framework;
 using Microsoft.Extensions.Logging;
 

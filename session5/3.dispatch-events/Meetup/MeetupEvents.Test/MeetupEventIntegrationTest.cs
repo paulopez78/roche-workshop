@@ -107,16 +107,16 @@ namespace MeetupEvents.Test
         public async Task Should_Produce_Concurrency_Problem_When_Attending()
         {
             // arrange
-            var meetupId        = NewGuid();
-            var attendantListId = NewGuid();
+            var meetupId = NewGuid();
 
             await CreateMeetup(meetupId);
             await Schedule(meetupId);
             await MakeOnline(meetupId);
             await Publish(meetupId);
-            
-            await CreateAttendantList(attendantListId, meetupId, capacity: 2);
-            await Open(attendantListId);
+            await ReduceCapacity(meetupId, byNumber: 8);
+
+            // await CreateAttendantList(NewGuid(), meetupId, capacity: 2);
+            // await Open(meetupId);
 
             var bob   = NewGuid();
             var alice = NewGuid();
@@ -135,28 +135,27 @@ namespace MeetupEvents.Test
             meetup.Attendants.Count(x => x.Waiting).Should().Be(1);
 
             Task AttendWithRetry(Guid memberId)
-                => Retry().ExecuteAsync(() => Attend(attendantListId, memberId));
+                => Retry().ExecuteAsync(() => Attend(meetupId, memberId));
         }
 
         [Fact]
         public async Task Should_Produce_Concurrency_Problem_When_Attend_And_UpdateDetails()
         {
             // arrange
-            var meetupId        = NewGuid();
-            var attendantListId = NewGuid();
+            var meetupId = NewGuid();
             await CreateMeetup(meetupId);
             await Schedule(meetupId);
             await MakeOnline(meetupId);
             await Publish(meetupId);
-            await CreateAttendantList(attendantListId, meetupId, capacity: 2);
-            await Open(attendantListId);
+            // await CreateAttendantList(NewGuid(), meetupId, capacity: 2);
+            // await Open(meetupId);
 
             var bob   = NewGuid();
             var title = "Microservices Benefits";
 
             // act
             await Task.WhenAll(
-                Attend(attendantListId, bob),
+                Attend(meetupId, bob),
                 UpdateDetails(meetupId, title)
             );
 
@@ -194,17 +193,26 @@ namespace MeetupEvents.Test
 
         Task<HttpResponseMessage> CreateAttendantList(Guid id, Guid meetupId, int capacity = 10) =>
             Client.PostAsJsonAsync($"{BaseUrl}/attendants",
-                new AttendantListCommands.V1.Create(id, meetupId, capacity));
+                new AttendantListCommands.V1.CreateAttendantList(id, meetupId, capacity));
 
-        Task<HttpResponseMessage> Open(Guid id) =>
-            Client.PutAsJsonAsync($"{BaseUrl}/attendants/open", new AttendantListCommands.V1.Open(id));
+        Task<HttpResponseMessage> Open(Guid meetupId) =>
+            Client.PutAsJsonAsync($"{BaseUrl}/attendants/open", new AttendantListCommands.V1.Open(meetupId));
 
-        Task<HttpResponseMessage> Attend(Guid id, Guid memberId) =>
-            Client.PutAsJsonAsync($"{BaseUrl}/attendants/attend", new AttendantListCommands.V1.Attend(id, memberId));
+        Task<HttpResponseMessage> Attend(Guid meetupId, Guid memberId) =>
+            Client.PutAsJsonAsync($"{BaseUrl}/attendants/attend",
+                new AttendantListCommands.V1.Attend(meetupId, memberId));
 
-        Task<HttpResponseMessage> CancelAttendance(Guid id, Guid memberId) =>
+        Task<HttpResponseMessage> CancelAttendance(Guid meetupId, Guid memberId) =>
             Client.PutAsJsonAsync($"{BaseUrl}/attendants/cancel",
-                new AttendantListCommands.V1.CancelAttendance(id, memberId));
+                new AttendantListCommands.V1.CancelAttendance(meetupId, memberId));
+
+        Task<HttpResponseMessage> IncreaseCapacity(Guid meetupId, int byNumber) =>
+            Client.PutAsJsonAsync($"{BaseUrl}/attendants/increase",
+                new AttendantListCommands.V1.IncreaseCapacity(meetupId, byNumber));
+
+        Task<HttpResponseMessage> ReduceCapacity(Guid meetupId, int byNumber) =>
+            Client.PutAsJsonAsync($"{BaseUrl}/attendants/reduce",
+                new AttendantListCommands.V1.ReduceCapacity(meetupId, byNumber));
 
         Task<ReadModels.V1.MeetupEvent> Get(Guid id) =>
             Client.GetFromJsonAsync<ReadModels.V1.MeetupEvent>($"/api/meetup/events/{id}");

@@ -40,7 +40,7 @@ namespace MeetupEvents.Infrastructure
 
     public interface IEventHandler<in TMessage>
     {
-        Task Handle(TMessage message);
+        Task Handle(TMessage created);
     }
 
     public class EventsDispatcher

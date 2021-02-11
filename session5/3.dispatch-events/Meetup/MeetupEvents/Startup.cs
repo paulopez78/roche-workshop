@@ -1,7 +1,4 @@
 using System;
-using MeetupEvents.Application;
-using MeetupEvents.Infrastructure;
-using MeetupEvents.Queries;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
@@ -10,6 +7,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using Npgsql;
+using MeetupEvents.Application;
+using MeetupEvents.Infrastructure;
+using MeetupEvents.Queries;
+using static MeetupEvents.Application.DomainServices;
 
 namespace MeetupEvents
 {
@@ -32,6 +33,9 @@ namespace MeetupEvents
             services.AddScoped<ApplicationServiceBuilder<AttendantListApplicationService>>();
             services.AddScoped<ApplicationServiceBuilder<MeetupEventsApplicationService>>();
 
+            services.AddSingleton<GetMappedId>(id =>
+                GetAttendantListId(() => new NpgsqlConnection(connectionString), id)
+            );
             services.AddSingleton(new MeetupEventQueries(() => new NpgsqlConnection(connectionString)));
 
             services.AddControllers();
