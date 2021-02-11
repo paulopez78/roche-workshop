@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
@@ -124,5 +125,25 @@ namespace MeetupEvents.Test
 
         Task<ReadModels.V1.MeetupEvent> Get(Guid id) =>
             Client.GetFromJsonAsync<ReadModels.V1.MeetupEvent>($"/api/meetup/events/{id}");
+
+        // AsyncRetryPolicy<HttpResponseMessage> Retry()
+        // {
+        //     Random jitterer = new();
+        //     return HttpPolicyExtensions
+        //         .HandleTransientHttpError()
+        //         .WaitAndRetryAsync(3, _ => TimeSpan.FromMilliseconds(jitterer.Next(50, 200)));
+        // }
+    }
+
+    public static class MeetupEventsIntegrationTestExtensions
+    {
+        public static bool Going(this ReadModels.V1.MeetupEvent meetup, Guid memberId)
+            => meetup.Attendants.Any(x => x.Id == memberId && !x.Waiting);
+
+        public static bool NotGoing(this ReadModels.V1.MeetupEvent meetup, Guid memberId)
+            => meetup.Attendants.All(x => x.Id != memberId);
+
+        public static bool Waiting(this ReadModels.V1.MeetupEvent meetup, Guid memberId)
+            => meetup.Attendants.Any(x => x.Id == memberId && x.Waiting);
     }
 }
