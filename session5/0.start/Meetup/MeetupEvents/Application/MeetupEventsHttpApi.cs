@@ -49,6 +49,14 @@ namespace MeetupEvents.Application
         [HttpPut("publish")]
         public Task<IActionResult> Publish(Publish command) =>
             HandleHttpCommand(command);
+        
+        [HttpPut("attend")]
+        public Task<IActionResult> Attend(Attend command) =>
+            HandleHttpCommand(command);
+        
+        [HttpPut("cancel-attendance")]
+        public Task<IActionResult> CancelAttendance(CancelAttendance command) =>
+            HandleHttpCommand(command);
 
         [HttpPut("cancel")]
         public Task<IActionResult> Cancel(Cancel command) =>

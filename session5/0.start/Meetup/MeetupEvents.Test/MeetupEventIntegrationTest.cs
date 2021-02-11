@@ -122,6 +122,12 @@ namespace MeetupEvents.Test
 
         Task<HttpResponseMessage> Cancel(Guid id, string reason = "") =>
             Client.PutAsJsonAsync($"{BaseUrl}/cancel", new Cancel(id, reason));
+        
+        Task<HttpResponseMessage> Attend(Guid id, Guid memberId) =>
+            Client.PutAsJsonAsync($"{BaseUrl}/attend", new Attend(id, memberId));
+        
+        Task<HttpResponseMessage> CancelAttendance(Guid id, Guid memberId) =>
+            Client.PutAsJsonAsync($"{BaseUrl}/cancel-attendance", new CancelAttendance(id, memberId));
 
         Task<ReadModels.V1.MeetupEvent> Get(Guid id) =>
             Client.GetFromJsonAsync<ReadModels.V1.MeetupEvent>($"/api/meetup/events/{id}");
