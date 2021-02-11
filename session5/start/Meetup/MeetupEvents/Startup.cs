@@ -24,7 +24,6 @@ namespace MeetupEvents
 
             services.AddSingleton<Func<DateTimeOffset>>(() => DateTimeOffset.UtcNow);
             services.AddScoped<MeetupEventsApplicationService>();
-            services.AddGrpc();
             services.AddControllers();
             services.AddSwaggerGen(c =>
             {
@@ -42,11 +41,7 @@ namespace MeetupEvents
             }
 
             app.UseRouting();
-            app.UseEndpoints(endpoints =>
-            {
-                endpoints.MapGrpcService<MeetupEventsGrpcService>();
-                endpoints.MapControllers();
-            });
+            app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
         }
     }
 }

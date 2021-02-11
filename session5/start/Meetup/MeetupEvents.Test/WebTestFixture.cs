@@ -1,6 +1,4 @@
-﻿using Grpc.Net.Client;
-using MeetupEvents.Contracts.Commands.V2;
-using MeetupEvents.Infrastructure;
+﻿using MeetupEvents.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -34,16 +32,5 @@ namespace MeetupEvents.Test
 
             return builder;
         }
-        
-        public MeetupEventsService.MeetupEventsServiceClient CreateGrpcClient()
-        {
-            var client = CreateDefaultClient();
-            var channel = GrpcChannel.ForAddress(client.BaseAddress, new GrpcChannelOptions
-            {
-                HttpClient = client
-            });
-        
-            return new MeetupEventsService.MeetupEventsServiceClient(channel);
-        } 
     }
 }

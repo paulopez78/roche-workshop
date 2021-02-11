@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Threading.Tasks;
-using MeetupEvents.Contracts.Commands.V1;
-using MeetupEvents.Infrastructure;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using MeetupEvents.Infrastructure;
+using static MeetupEvents.Contracts.Commands.V1;
 
 namespace MeetupEvents.Application
 {

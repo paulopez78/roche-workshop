@@ -5,9 +5,9 @@ using System.Net.Http.Json;
 using System.Threading.Tasks;
 using FluentAssertions;
 using MeetupEvents.Contracts;
-using MeetupEvents.Contracts.Commands.V1;
 using Xunit;
 using Xunit.Abstractions;
+using static MeetupEvents.Contracts.Commands.V1;
 
 namespace MeetupEvents.Test
 {
@@ -18,37 +18,10 @@ namespace MeetupEvents.Test
             Fixture        = fixture;
             Fixture.Output = testOutputHelper;
             Client         = Fixture.CreateClient();
-            GrpcClient     = Fixture.CreateGrpcClient();
         }
 
         readonly WebTestFixture Fixture;
         readonly HttpClient     Client;
-
-        readonly Contracts.Commands.V2.MeetupEventsService.MeetupEventsServiceClient GrpcClient;
-
-        [Fact]
-        public async Task Should_Create_Meetup_Using_Grpc()
-        {
-            // arrange
-            var meetupId    = Guid.NewGuid();
-            var title       = "Microservices Failures";
-            var description = "This is a talk about ...";
-
-            // act
-            var commandReply = await GrpcClient.CreateMeetupAsync(
-                new Contracts.Commands.V2.Create
-                {
-                    Id = meetupId.ToString(), Title = title, Description = description, Capacity = 10
-                }
-            );
-
-            // assert 
-            var meetup = await Get(meetupId);
-
-            meetup.Title.Should().Be(title);
-            meetup.Description.Should().Be(description);
-            commandReply.Id.Should().Be(meetupId.ToString());
-        }
 
         [Fact]
         public async Task Should_Create_Meetup()
@@ -63,8 +36,8 @@ namespace MeetupEvents.Test
             // assert 
             var meetup = await Get(meetupId);
 
-            Assert.Equal(title, meetup.Title);
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            meetup.Title.Should().Be(title);
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
         }
 
         [Fact]
@@ -80,8 +53,8 @@ namespace MeetupEvents.Test
 
             // assert 
             var meetup = await Get(meetupId);
-            Assert.Equal(title, meetup.Title);
-            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+            meetup.Title.Should().Be(title);
+            response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         }
 
         [Fact]
@@ -95,7 +68,7 @@ namespace MeetupEvents.Test
             var response = await Publish(meetupId);
 
             // assert 
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
         }
 
         [Fact]
@@ -110,7 +83,7 @@ namespace MeetupEvents.Test
             var response = await Cancel(meetupId);
 
             // assert 
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
         }
 
         [Fact]
@@ -123,7 +96,7 @@ namespace MeetupEvents.Test
             var response = await Cancel(meetupId);
 
             // assert 
-            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+            response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         }
 
         private const string BaseUrl = "/api/meetup/events";

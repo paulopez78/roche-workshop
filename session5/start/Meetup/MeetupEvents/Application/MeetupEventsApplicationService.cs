@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Threading.Tasks;
-using MeetupEvents.Contracts.Commands.V1;
 using Microsoft.EntityFrameworkCore;
 using MeetupEvents.Domain;
 using MeetupEvents.Infrastructure;
+using static MeetupEvents.Contracts.Commands.V1;
 
 namespace MeetupEvents.Application
 {
@@ -99,17 +99,8 @@ namespace MeetupEvents.Application
                         meetup => meetup.Finish()
                     ),
 
-                Contracts.Commands.V2.Create create =>
-                    HandleCreateCommand(
-                        create.Id,
-                        meetup => meetup.Create(Parse(create.Id), create.Title, create.Description, create.Capacity)
-                    ),
-
                 _ => throw new InvalidOperationException("Command handler does not exist")
             };
-
-        Task<CommandResult> HandleCreateCommand(string id, Action<MeetupEventAggregate> handler) =>
-            HandleCreateCommand(Parse(id), handler);
 
         async Task<CommandResult> HandleCreateCommand(Guid id, Action<MeetupEventAggregate> handler)
         {
@@ -146,14 +137,6 @@ namespace MeetupEvents.Application
 
         Task<MeetupEventAggregate?> Load(Guid id)
             => _repository.MeetupEvents.SingleOrDefaultAsync(x => x.Id == id)!;
-
-        Guid Parse(string id)
-        {
-            if (!Guid.TryParse(id, out var uuid))
-                throw new ArgumentException(nameof(id));
-
-            return uuid;
-        }
     }
 
     public record CommandResult(Guid Id, string ErrorMessage = "")
