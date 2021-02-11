@@ -9,7 +9,7 @@ services:
       dockerfile: Dockerfile
     environment:
       ASPNETCORE_ENVIRONMENT: Development
-      ConnectionString: "Host=database;Port=5432;Database=meetupevents;Username=postgres;Password=mysecretpassword"
+      ConnectionStrings__MeetupEvents: "Host=database;Port=5432;Database=meetupevents;Username=postgres;Password=mysecretpassword"
     ports:
       - 5000:80
 

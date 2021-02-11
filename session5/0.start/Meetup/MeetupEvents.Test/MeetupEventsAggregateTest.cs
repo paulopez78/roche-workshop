@@ -24,7 +24,7 @@ namespace MeetupEvents.Test
         public void Given_Draft_Meetup_When_Publish_Then_Published()
         {
             // Arrange - Given
-            var meetup = CreateMeetup();
+            var meetup = CreateMeetup().Schedule().MakeOnline();
 
             // Act - When
             meetup.Publish();
@@ -37,8 +37,7 @@ namespace MeetupEvents.Test
         public void Given_Published_Meetup_When_Cancel_Then_Cancelled()
         {
             // Arrange - Given
-            var meetup = CreateMeetup();
-            meetup.Publish();
+            var meetup = CreateMeetup().Schedule().MakeOnline().PublishMeetup();
 
             // Act - When
             meetup.Cancel();
@@ -51,8 +50,7 @@ namespace MeetupEvents.Test
         public void Given_Published_Meetup_When_Start_Then_Started()
         {
             // Arrange - Given
-            var meetup = CreateMeetup();
-            meetup.Publish();
+            var meetup = CreateMeetup().Schedule().MakeOnline().PublishMeetup();
 
             // Act - When
             meetup.Start();
@@ -65,8 +63,7 @@ namespace MeetupEvents.Test
         public void Given_Started_Meetup_When_Finish_Then_Finished()
         {
             // Arrange - Given
-            var meetup = CreateMeetup();
-            meetup.Publish();
+            var meetup = CreateMeetup().Schedule().MakeOnline().PublishMeetup();
             meetup.Start();
 
             // Act - When
@@ -93,8 +90,7 @@ namespace MeetupEvents.Test
         public void Given_Cancelled_Meetup_When_Publish_Then_InvalidOperation()
         {
             // Arrange - Given
-            var meetup = CreateMeetup();
-            meetup.Publish();
+            var meetup = CreateMeetup().Schedule().MakeOnline().PublishMeetup();
             meetup.Cancel();
 
             // Act - When
@@ -108,8 +104,7 @@ namespace MeetupEvents.Test
         public void Given_Not_Active_Meetup_When_MakeOnline_Then_InvalidOperation()
         {
             // Arrange - Given
-            var meetup = CreateMeetup();
-            meetup.Publish();
+            var meetup = CreateMeetup().Schedule().MakeOnline().PublishMeetup();
             meetup.Cancel();
 
             // Act - When
@@ -123,8 +118,7 @@ namespace MeetupEvents.Test
         public void Given_Active_Meetup_When_Member_Attend_Then_Going()
         {
             // arrange
-            var meetup = CreateMeetup();
-            meetup.Publish();
+            var meetup = CreateMeetup().Schedule().MakeOnline().PublishMeetup();
 
             // act
             meetup.Attend(joe, DateTimeOffset.UtcNow);
@@ -137,8 +131,7 @@ namespace MeetupEvents.Test
         public void Given_Member_Attending_When_Cancel_Attendance_Then_Removed_From_Attendants()
         {
             // arrange
-            var meetup = CreateMeetup();
-            meetup.Publish();
+            var meetup = CreateMeetup().Schedule().MakeOnline().PublishMeetup();
             meetup.Attend(joe, DateTimeOffset.UtcNow);
 
             // act
@@ -153,8 +146,7 @@ namespace MeetupEvents.Test
         {
             // arrange
             var now    = DateTimeOffset.UtcNow;
-            var meetup = CreateMeetup();
-            meetup.Publish();
+            var meetup = CreateMeetup().Schedule().MakeOnline().PublishMeetup();
 
             // act
             meetup.Attend(joe, now);
@@ -172,8 +164,7 @@ namespace MeetupEvents.Test
         {
             // arrange
             var now    = DateTimeOffset.UtcNow;
-            var meetup = CreateMeetup(capacity: 2);
-            meetup.Publish();
+            var meetup = CreateMeetup(capacity: 2).Schedule().MakeOnline().PublishMeetup();
 
             // act
             meetup.Attend(joe, now);
@@ -192,8 +183,7 @@ namespace MeetupEvents.Test
         {
             // arrange
             var now    = DateTimeOffset.UtcNow;
-            var meetup = CreateMeetup(capacity: 3);
-            meetup.Publish();
+            var meetup = CreateMeetup(capacity: 3).Schedule().MakeOnline().PublishMeetup();
             meetup.Attend(joe, now);
             meetup.Attend(alice, now.AddSeconds(1));
             meetup.Attend(bob, now.AddSeconds(2));
@@ -212,8 +202,7 @@ namespace MeetupEvents.Test
         {
             // arrange
             var now    = DateTimeOffset.UtcNow;
-            var meetup = CreateMeetup(capacity: 2);
-            meetup.Publish();
+            var meetup = CreateMeetup(capacity: 2).Schedule().MakeOnline().PublishMeetup();
             meetup.Attend(joe, now);
             meetup.Attend(alice, now.AddSeconds(1));
             meetup.Attend(bob, now.AddSeconds(2));
@@ -241,6 +230,25 @@ namespace MeetupEvents.Test
 
     public static class MeetupEventsAggregateTestExtensions
     {
+        public static MeetupEventAggregate Schedule(this MeetupEventAggregate meetup)
+        {
+            var now = DateTimeOffset.UtcNow;
+            meetup.Schedule(now.AddMonths(1), now.AddMonths(1).AddHours(2), now);
+            return meetup;
+        }
+
+        public static MeetupEventAggregate MakeOnline(this MeetupEventAggregate meetup)
+        {
+            meetup.MakeOnline(new Uri("http://zoom.us/netcorebcn"));
+            return meetup;
+        }
+
+        public static MeetupEventAggregate PublishMeetup(this MeetupEventAggregate meetup)
+        {
+            meetup.Publish();
+            return meetup;
+        }
+
         public static bool Going(this MeetupEventAggregate aggregate, Guid memberId)
             => aggregate.Attendants.Any(x => x.MemberId == memberId && !x.Waiting);
 

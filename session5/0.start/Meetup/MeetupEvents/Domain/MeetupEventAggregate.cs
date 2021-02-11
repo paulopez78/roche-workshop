@@ -9,14 +9,13 @@ namespace MeetupEvents.Domain
         public Guid              Id                 { get; private set; }
         public string            Title              { get; private set; } = string.Empty;
         public string            Description        { get; private set; } = string.Empty;
-        public DateTimeOffset    StartTime          { get; private set; }
-        public DateTimeOffset    EndTime            { get; private set; }
+        public int               Capacity           { get; private set; }
+        public MeetupEventStatus Status             { get; private set; } = MeetupEventStatus.None;
+        public DateTimeOffset?   StartTime          { get; private set; }
+        public DateTimeOffset?   EndTime            { get; private set; }
         public string?           Address            { get; private set; }
         public Uri?              Url                { get; private set; }
         public string?           CancellationReason { get; private set; }
-        public int               Capacity           { get; private set; }
-        public MeetupEventStatus Status             { get; private set; } = MeetupEventStatus.None;
-
 
         readonly List<Attendant>        _attendants = new();
         public   IEnumerable<Attendant> Attendants => _attendants.OrderBy(x => x.AddedAt);
@@ -74,18 +73,23 @@ namespace MeetupEvents.Domain
                 throw new ArgumentNullException(nameof(address));
 
             EnforceActive();
+
             Address = address;
         }
 
         public void Publish()
         {
+            EnforceScheduled();
+            EnforceLocation();
             EnforceDraft();
+
             Status = MeetupEventStatus.Published;
         }
 
         public void Cancel(string? reason = null)
         {
             EnforcePublished();
+
             Status             = MeetupEventStatus.Cancelled;
             CancellationReason = reason;
         }
@@ -93,12 +97,14 @@ namespace MeetupEvents.Domain
         public void Start()
         {
             EnforcePublished();
+
             Status = MeetupEventStatus.Started;
         }
 
         public void Finish()
         {
             EnforceStarted();
+
             Status = MeetupEventStatus.Finished;
 
             void EnforceStarted() => EnforceStatusMustBe(MeetupEventStatus.Started);
@@ -118,13 +124,13 @@ namespace MeetupEvents.Domain
 
             _attendants.Add(attendant);
 
+            bool HasFreeSpots() => Capacity - _attendants.Count > 0;
+
             void EnforceNotAttending()
             {
                 if (Attendants.Any(x => x.MemberId == memberId))
                     throw new InvalidOperationException($"Member {memberId} already attending");
             }
-
-            bool HasFreeSpots() => Capacity - _attendants.Count > 0;
         }
 
         public void CancelAttendance(Guid memberId)
@@ -212,6 +218,18 @@ namespace MeetupEvents.Domain
 
             if (string.IsNullOrEmpty(description))
                 throw new ArgumentNullException(nameof(description));
+        }
+
+        void EnforceScheduled()
+        {
+            if (StartTime is null || EndTime is null)
+                throw new ArgumentException("Not scheduled");
+        }
+
+        void EnforceLocation()
+        {
+            if (string.IsNullOrEmpty(Address) && Url is null)
+                throw new ArgumentException("Location not specified");
         }
     }
 

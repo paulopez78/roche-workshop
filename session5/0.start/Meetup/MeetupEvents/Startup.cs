@@ -1,3 +1,4 @@
+using System;
 using MeetupEvents.Application;
 using MeetupEvents.Infrastructure;
 using Microsoft.AspNetCore.Builder;
@@ -18,13 +19,11 @@ namespace MeetupEvents
 
         public void ConfigureServices(IServiceCollection services)
         {
-            var connectionString = Configuration["ConnectionString"];
-            services.AddDbContext<MeetupEventsDbContext>(options =>
-            {
-                options.UseNpgsql(connectionString);
-            });
+            var connectionString = Configuration.GetConnectionString("MeetupEvents");
+            services.AddDbContext<MeetupEventsDbContext>(options => { options.UseNpgsql(connectionString); });
+
+            services.AddSingleton<Func<DateTimeOffset>>(() => DateTimeOffset.UtcNow);
             services.AddScoped<MeetupEventsApplicationService>();
-            services.AddGrpc();
             services.AddControllers();
             services.AddSwaggerGen(c =>
             {
@@ -42,11 +41,7 @@ namespace MeetupEvents
             }
 
             app.UseRouting();
-            app.UseEndpoints(endpoints =>
-            {
-                endpoints.MapGrpcService<MeetupEventsGrpcService>();
-                endpoints.MapControllers();
-            });
+            app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
         }
     }
 }
