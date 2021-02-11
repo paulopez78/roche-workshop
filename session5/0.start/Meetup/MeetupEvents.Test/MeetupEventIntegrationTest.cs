@@ -100,12 +100,70 @@ namespace MeetupEvents.Test
             response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         }
 
+        // [Fact]
+        // public async Task Should_Produce_Concurrency_Problem_When_Attending()
+        // {
+        //     // arrange
+        //     var meetupId = NewGuid();
+        //     await CreateMeetup(meetupId, capacity: 2);
+        //     await Schedule(meetupId);
+        //     await MakeOnline(meetupId);
+        //     await Publish(meetupId);
+        //
+        //     var bob   = NewGuid();
+        //     var alice = NewGuid();
+        //     var joe   = NewGuid();
+        //
+        //     // act
+        //     await Task.WhenAll(
+        //         AttendWithRetry(bob),
+        //         AttendWithRetry(alice),
+        //         AttendWithRetry(joe)
+        //     );
+        //
+        //     // assert 
+        //     var meetup = await Get(meetupId);
+        //     meetup.Attendants.Should().HaveCount(3);
+        //     meetup.Attendants.Count(x => x.Waiting).Should().Be(1);
+        //
+        //     Task AttendWithRetry(Guid memberId)
+        //         => Retry().ExecuteAsync(() => Attend(meetupId, memberId));
+        // }
+        //
+        // [Fact]
+        // public async Task Should_Produce_Concurrency_Problem_When_Attend_And_UpdateDetails()
+        // {
+        //     // arrange
+        //     var meetupId = NewGuid();
+        //     await CreateMeetup(meetupId, capacity: 2);
+        //     await Schedule(meetupId);
+        //     await MakeOnline(meetupId);
+        //     await Publish(meetupId);
+        //
+        //     var bob   = NewGuid();
+        //     var title = "Microservices Benefits";
+        //
+        //     // act
+        //     await Task.WhenAll(
+        //         Attend(meetupId, bob),
+        //         UpdateDetails(meetupId, title)
+        //     );
+        //
+        //     // assert 
+        //     var meetup = await Get(meetupId);
+        //     meetup.Title.Should().Be(title);
+        //     meetup.Going(bob).Should().BeTrue();
+        // }
+
         const string BaseUrl     = "/api/meetup/events";
         const string Title       = "Microservices Failures";
         const string Description = "This is a talk about ...";
 
         Task<HttpResponseMessage> CreateMeetup(Guid id, int capacity = 10) =>
             Client.PostAsJsonAsync(BaseUrl, new Create(id, Title, Description, capacity));
+
+        Task<HttpResponseMessage> UpdateDetails(Guid id, string title, string description = null) =>
+            Client.PutAsJsonAsync($"{BaseUrl}/details", new UpdateDetails(id, title, description ?? Description));
 
         Task<HttpResponseMessage> Publish(Guid id) =>
             Client.PutAsJsonAsync($"{BaseUrl}/publish", new Publish(id));
@@ -122,10 +180,10 @@ namespace MeetupEvents.Test
 
         Task<HttpResponseMessage> Cancel(Guid id, string reason = "") =>
             Client.PutAsJsonAsync($"{BaseUrl}/cancel", new Cancel(id, reason));
-        
+
         Task<HttpResponseMessage> Attend(Guid id, Guid memberId) =>
             Client.PutAsJsonAsync($"{BaseUrl}/attend", new Attend(id, memberId));
-        
+
         Task<HttpResponseMessage> CancelAttendance(Guid id, Guid memberId) =>
             Client.PutAsJsonAsync($"{BaseUrl}/cancel-attendance", new CancelAttendance(id, memberId));
 
@@ -137,7 +195,8 @@ namespace MeetupEvents.Test
         //     Random jitterer = new();
         //     return HttpPolicyExtensions
         //         .HandleTransientHttpError()
-        //         .WaitAndRetryAsync(3, _ => TimeSpan.FromMilliseconds(jitterer.Next(50, 200)));
+        //         .WaitAndRetryAsync(3, _ => TimeSpan.FromMilliseconds(jitterer.Next(0, 100)));
+        //     // .RetryAsync(3);
         // }
     }
 
