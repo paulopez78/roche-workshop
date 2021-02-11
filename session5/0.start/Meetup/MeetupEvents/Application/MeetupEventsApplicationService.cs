@@ -22,79 +22,79 @@ namespace MeetupEvents.Application
             command switch
             {
                 Create create =>
-                    HandleCreateCommand(
+                    HandleCreate(
                         create.Id,
                         meetup => meetup.Create(create.Id, create.Title, create.Description, create.Capacity)
                     ),
 
                 UpdateDetails details =>
-                    HandleCommand(
+                    Handle(
                         details.Id,
                         meetup => meetup.UpdateDetails(details.Title, details.Description)
                     ),
 
                 Schedule schedule =>
-                    HandleCommand(
+                    Handle(
                         schedule.Id,
                         meetup => meetup.Schedule(schedule.Start, schedule.End, _getUtcNow())
                     ),
 
                 MakeOnline online =>
-                    HandleCommand(
+                    Handle(
                         online.Id,
                         meetup => meetup.MakeOnline(online.Url)
                     ),
 
                 MakeOnsite onsite =>
-                    HandleCommand(
+                    Handle(
                         onsite.Id,
                         meetup => meetup.MakeOnsite(onsite.Address)
                     ),
 
                 IncreaseCapacity increase =>
-                    HandleCommand(
+                    Handle(
                         increase.Id,
                         meetup => meetup.IncreaseCapacity(increase.ByNumber)
                     ),
 
                 ReduceCapacity reduce =>
-                    HandleCommand(
+                    Handle(
                         reduce.Id,
                         meetup => meetup.ReduceCapacity(reduce.ByNumber)
                     ),
 
                 Publish publish =>
-                    HandleCommand(
+                    Handle(
                         publish.Id,
                         meetup => meetup.Publish()
                     ),
 
                 Attend attend =>
-                    HandleCommand(
+                    Handle(
                         attend.Id,
                         meetup => meetup.Attend(attend.MemberId, _getUtcNow())
                     ),
 
                 CancelAttendance cancelAttendance =>
-                    HandleCommand(
+                    Handle(
                         cancelAttendance.Id,
                         meetup => meetup.CancelAttendance(cancelAttendance.MemberId)
                     ),
 
                 Cancel cancel =>
-                    HandleCommand(
+                    Handle(
                         cancel.Id,
                         meetup => meetup.Cancel(cancel.Reason)
                     ),
 
                 Start start =>
-                    HandleCommand(
+                    Handle(
                         start.Id,
                         meetup => meetup.Start()
                     ),
 
                 Finish finish =>
-                    HandleCommand(
+                    Handle(
                         finish.Id,
                         meetup => meetup.Finish()
                     ),
@@ -102,7 +102,7 @@ namespace MeetupEvents.Application
                 _ => throw new InvalidOperationException("Command handler does not exist")
             };
 
-        async Task<CommandResult> HandleCreateCommand(Guid id, Action<MeetupEventAggregate> handler)
+        async Task<CommandResult> HandleCreate(Guid id, Action<MeetupEventAggregate> handler)
         {
             // idempotency check
             var loadedAggregate = await Load(id);
@@ -120,7 +120,7 @@ namespace MeetupEvents.Application
             return new(id);
         }
 
-        async Task<CommandResult> HandleCommand(Guid id, Action<MeetupEventAggregate> handler)
+        async Task<CommandResult> Handle(Guid id, Action<MeetupEventAggregate> handler)
         {
             // load aggregate
             var aggregate = await Load(id);
@@ -136,7 +136,7 @@ namespace MeetupEvents.Application
         }
 
         Task<MeetupEventAggregate?> Load(Guid id)
-            => _repository.MeetupEvents.SingleOrDefaultAsync(x => x.Id == id)!;
+            => _repository.MeetupEvents.Include(x => x.Attendants).SingleOrDefaultAsync(x => x.Id == id)!;
     }
 
     public record CommandResult(Guid Id, string ErrorMessage = "")

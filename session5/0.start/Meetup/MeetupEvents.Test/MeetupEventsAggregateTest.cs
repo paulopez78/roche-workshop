@@ -146,7 +146,7 @@ namespace MeetupEvents.Test
         {
             // arrange
             var now    = DateTimeOffset.UtcNow;
-            var meetup = CreateMeetup().Schedule().MakeOnline().PublishMeetup();
+            var meetup = CreateMeetup(capacity:3).Schedule().MakeOnline().PublishMeetup();
 
             // act
             meetup.Attend(joe, now);
@@ -158,9 +158,27 @@ namespace MeetupEvents.Test
             meetup.Going(alice).Should().BeTrue();
             meetup.Going(bob).Should().BeTrue();
         }
-
+        
         [Fact]
         public void Given_Active_Meetup_Without_Enough_Capacity_When_Members_Attend_Then_Some_Waiting()
+        {
+            // arrange
+            var now    = DateTimeOffset.UtcNow;
+            var meetup = CreateMeetup(capacity: 2).Schedule().MakeOnline().PublishMeetup();
+
+            // act
+            meetup.Attend(joe, now);
+            meetup.Attend(alice, now.AddSeconds(1));
+            meetup.Attend(bob, now.AddSeconds(2));
+
+            // assert
+            meetup.Going(joe).Should().BeTrue();
+            meetup.Going(alice).Should().BeTrue();
+            meetup.Waiting(bob).Should().BeTrue();
+        }
+
+        [Fact]
+        public void Given_Active_Meetup_Without_Enough_Capacity_When_Cancel_Attendance_Then_WaitingList_Updated()
         {
             // arrange
             var now    = DateTimeOffset.UtcNow;
