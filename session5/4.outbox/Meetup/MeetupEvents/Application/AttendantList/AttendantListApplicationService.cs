@@ -6,7 +6,7 @@ using MeetupEvents.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using static MeetupEvents.Contracts.AttendantListCommands.V1;
 
-namespace MeetupEvents.Application
+namespace MeetupEvents.Application.AttendantList
 {
     public class AttendantListApplicationService : ApplicationService<AttendantListAggregate>
     {

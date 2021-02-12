@@ -1,11 +1,11 @@
-﻿using static System.Guid;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using MeetupEvents.Framework;
 using MeetupEvents.Infrastructure;
+using static System.Guid;
 using static MeetupEvents.Contracts.MeetupEvents.V1;
 using static MeetupEvents.Contracts.AttendantListCommands.V1;
 
-namespace MeetupEvents.Application
+namespace MeetupEvents.Application.AttendantList
 {
     public class AttendantListEventsHandler :
         IEventHandler<MeetupCreated>,

@@ -3,7 +3,7 @@ using System.Data.Common;
 using System.Threading.Tasks;
 using Dapper;
 
-namespace MeetupEvents.Application
+namespace MeetupEvents.Application.AttendantList
 {
     public delegate Task<Guid?> GetMappedId(Guid id);
 

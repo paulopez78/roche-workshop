@@ -5,7 +5,7 @@ using MeetupEvents.Framework;
 using MeetupEvents.Infrastructure;
 using static MeetupEvents.Contracts.MeetupCommands.V1;
 
-namespace MeetupEvents.Application
+namespace MeetupEvents.Application.Meetup
 {
     public class MeetupEventsApplicationService : ApplicationService<MeetupEventAggregate>
     {

@@ -1,14 +1,14 @@
 ﻿using System;
-using static System.Guid;
 using System.Threading.Tasks;
 using MassTransit;
 using MeetupEvents.Framework;
 using MeetupEvents.Infrastructure;
 using Npgsql;
+using static System.Guid;
 using static MeetupEvents.Contracts.MeetupEvents.V1;
 using static MeetupEvents.Contracts.AttendantListCommands.V1;
 
-namespace MeetupEvents.Application
+namespace MeetupEvents.Application.AttendantList
 {
     public class AttendantListMassTransitConsumer :
         IConsumer<MeetupCreated>,

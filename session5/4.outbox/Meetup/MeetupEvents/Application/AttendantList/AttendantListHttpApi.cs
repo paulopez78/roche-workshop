@@ -4,7 +4,7 @@ using MeetupEvents.Infrastructure;
 using Microsoft.AspNetCore.Mvc;
 using static MeetupEvents.Contracts.AttendantListCommands.V1;
 
-namespace MeetupEvents.Application
+namespace MeetupEvents.Application.AttendantList
 {
     [ApiController]
     [Route("/api/meetup/events/attendants")]

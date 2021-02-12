@@ -9,7 +9,7 @@ namespace MeetupEvents.Domain
     public class AttendantListAggregate : Aggregate
     {
         readonly List<Attendant>        _attendants = new();
-        public   IEnumerable<Attendant> Attendants    => _attendants;
+        public   IEnumerable<Attendant> Attendants    => _attendants.OrderBy(x => x.AddedAt);
         public   Guid                   MeetupEventId { get; private set; }
         public   PositiveNumber         Capacity      { get; private set; } = 0;
         public   AttendantListStatus    Status        { get; private set; } = AttendantListStatus.None;
@@ -69,7 +69,7 @@ namespace MeetupEvents.Domain
 
             _attendants.Add(attendant);
 
-            bool HasFreeSpots() => Capacity - _attendants.Count > 0;
+            bool HasFreeSpots() => (Capacity - _attendants.Count) > 0;
 
             void EnforceNotAttending()
             {
@@ -83,7 +83,9 @@ namespace MeetupEvents.Domain
             EnforceOpened();
             EnforceAttending();
 
-            _attendants.Remove(Attendant(memberId)!);
+            var notGoingAttendant = Attendant(memberId);
+
+            _attendants.Remove(notGoingAttendant!);
             _changes.Add(new AttendantRemoved(Id, memberId));
 
             UpdateWaitingList();
@@ -96,6 +98,8 @@ namespace MeetupEvents.Domain
 
             void UpdateWaitingList()
             {
+                if (notGoingAttendant.Waiting) return;
+
                 var firstWaiting = Attendants.FirstOrDefault(x => x.Waiting);
                 if (firstWaiting is null) return;
 
@@ -109,21 +113,16 @@ namespace MeetupEvents.Domain
             EnforceActive();
 
             Capacity -= byNumber;
-            UpdateWaitingList();
 
-            void UpdateWaitingList()
-            {
-                var shouldWait = Attendants
-                    .Where(x => !x.Waiting)
-                    .TakeLast(byNumber)
-                    .ToList();
-
-                shouldWait.ForEach(x =>
+            Going.TakeLast(LostSpots())
+                .ToList().ForEach(x =>
                 {
                     x.Wait();
                     _changes.Add(new AttendantMovedToWaiting(Id, x.MemberId, x.AddedAt));
                 });
-            }
+
+            PositiveNumber LostSpots() =>
+                Going.Count() - Capacity;
         }
 
         public void IncreaseCapacity(PositiveNumber byNumber)
@@ -131,21 +130,13 @@ namespace MeetupEvents.Domain
             EnforceActive();
 
             Capacity += byNumber;
-            UpdateWaitingList();
 
-            void UpdateWaitingList()
-            {
-                var shouldAttend = Attendants
-                    .Where(x => x.Waiting)
-                    .Take(byNumber)
-                    .ToList();
-
-                shouldAttend.ForEach(x =>
+            Waiting.Take(byNumber)
+                .ToList().ForEach(x =>
                 {
                     x.Attend();
                     _changes.Add(new AttendantAdded(Id, x.MemberId, x.AddedAt));
                 });
-            }
         }
 
         void EnforceNotCreated() =>
@@ -168,6 +159,9 @@ namespace MeetupEvents.Domain
 
         Attendant? Attendant(Guid attendantId) =>
             Attendants.FirstOrDefault(x => x.MemberId == attendantId);
+
+        IEnumerable<Attendant> Going   => Attendants.Where(x => !x.Waiting);
+        IEnumerable<Attendant> Waiting => Attendants.Where(x => x.Waiting);
     }
 
     public class Attendant

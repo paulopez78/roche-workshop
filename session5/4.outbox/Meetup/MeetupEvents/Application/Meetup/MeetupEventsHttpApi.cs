@@ -1,10 +1,10 @@
 ﻿using System.Threading.Tasks;
 using MeetupEvents.Framework;
-using Microsoft.AspNetCore.Mvc;
 using MeetupEvents.Infrastructure;
+using Microsoft.AspNetCore.Mvc;
 using static MeetupEvents.Contracts.MeetupCommands.V1;
 
-namespace MeetupEvents.Application
+namespace MeetupEvents.Application.Meetup
 {
     [ApiController]
     [Route("/api/meetup/events")]

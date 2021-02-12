@@ -30,7 +30,7 @@ namespace MeetupEvents.Queries
 
             MeetupEvent? result = null;
 
-            await connection.QueryAsync<MeetupEvent, Attendant, MeetupEvent>($"{BaseQuery} WHERE M.\"Id\"=@id",
+            await connection.QueryAsync<MeetupEvent, Attendant, MeetupEvent>($"{BaseQuery} WHERE M.\"Id\"=@id ORDER BY A.\"AddedAt\"",
                 (evt, inv) =>
                 {
                     result ??= evt;
@@ -49,7 +49,7 @@ namespace MeetupEvents.Queries
             var lookup = new Dictionary<Guid, MeetupEvent>();
 
             await dbConnection.QueryAsync<MeetupEvent, Attendant, MeetupEvent>(
-                $"{BaseQuery} WHERE M.\"GroupId\"=@groupId",
+                $"{BaseQuery} WHERE M.\"GroupId\"=@groupId ORDER BY A.\"AddedAt\"",
                 (evt, inv) =>
                 {
                     if (!lookup.ContainsKey(evt.Id)) lookup.Add(evt.Id, evt);
