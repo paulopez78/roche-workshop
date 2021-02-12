@@ -2,29 +2,47 @@
 using MassTransit;
 using MeetupEvents.Framework;
 using MeetupEvents.Infrastructure;
-using static System.Guid;
-using static MeetupEvents.Contracts.MeetupEvents.V1;
 using static MeetupEvents.Contracts.AttendantListCommands.V1;
 
 namespace MeetupEvents.Application.AttendantList
 {
-    public class AttendantListMassTransitConsumer :
-        IConsumer<MeetupCreated>,
-        IConsumer<Published>,
-        IConsumer<Canceled>
+    public class AttendantListMassTransitConsumer:
+        IConsumer<CreateAttendantList>,
+        IConsumer<Open>,
+        IConsumer<Close>,
+        IConsumer<Archive>,
+        IConsumer<Attend>,
+        IConsumer<CancelAttendance>,
+        IConsumer<IncreaseCapacity>,
+        IConsumer<ReduceCapacity>
     {
         readonly IApplicationService _applicationService;
 
         public AttendantListMassTransitConsumer(ApplicationServiceBuilder<AttendantListApplicationService> builder) =>
-            _applicationService = builder.Build();
+            _applicationService= builder.WithOutbox().WithExceptionLogging().Build();
 
-        public Task Consume(ConsumeContext<MeetupCreated> context) => 
-            _applicationService.Handle(new CreateAttendantList(NewGuid(), context.Message.Id, 10));
+        public Task Consume(ConsumeContext<CreateAttendantList> context) =>
+            _applicationService.HandleMassTransit(context.Message);
 
-        public Task Consume(ConsumeContext<Published> context) =>
-            _applicationService.Handle(new Open(context.Message.Id));
+        public Task Consume(ConsumeContext<Open> context) =>
+            _applicationService.HandleMassTransit(context.Message);
 
-        public Task Consume(ConsumeContext<Canceled> context) =>
-            _applicationService.Handle(new Close(context.Message.Id));
+        public Task Consume(ConsumeContext<Close> context) =>
+            _applicationService.HandleMassTransit(context.Message);
+        
+        public Task Consume(ConsumeContext<Archive> context) =>
+            _applicationService.HandleMassTransit(context.Message);
+        
+        public Task Consume(ConsumeContext<Attend> context) =>
+            _applicationService.HandleMassTransit(context.Message);
+        
+        public Task Consume(ConsumeContext<CancelAttendance> context) =>
+            _applicationService.HandleMassTransit(context.Message);
+        
+        public Task Consume(ConsumeContext<IncreaseCapacity> context) =>
+            _applicationService.HandleMassTransit(context.Message);
+        
+        public Task Consume(ConsumeContext<ReduceCapacity> context) =>
+            _applicationService.HandleMassTransit(context.Message);
     }
 }

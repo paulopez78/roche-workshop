@@ -6,9 +6,17 @@ namespace MeetupEvents.Contracts
     {
         public static class V1
         {
+            public record MeetupCreated(Guid MeetupEventId);
+
+            public record MeetupScheduled(Guid MeetupEventId, DateTimeOffset Start, DateTimeOffset End);
+
             public record MeetupPublished(Guid MeetupEventId, DateTimeOffset PublishedAt);
 
-            public record MeetupCanceled(Guid MeetupEventId, string Reason, DateTimeOffset CancelledAt);
+            public record MeetupCancelled(Guid MeetupEventId, string Reason, DateTimeOffset CancelledAt);
+            
+            public record MeetupStarted(Guid MeetupEventId);
+            
+            public record MeetupFinished(Guid MeetupEventId);
 
             public record MeetupAttendantAdded(Guid MeetupEventId, Guid MemberId, DateTimeOffset AddedAt);
 

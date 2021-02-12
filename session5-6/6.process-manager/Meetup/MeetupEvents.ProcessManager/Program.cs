@@ -1,20 +1,19 @@
 using System;
 using GreenPipes;
 using MassTransit;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Npgsql;
 using OpenTelemetry.Trace;
 using Serilog;
-using static MeetupEvents.IntegrationEventsPublisher.DomainServices;
 using static System.Environment;
+using static MeetupEvents.Contracts.MeetupCommands.V1;
+using static MeetupEvents.Contracts.AttendantListCommands.V1;
 
-namespace MeetupEvents.IntegrationEventsPublisher
+namespace MeetupEvents.ProcessManager
 {
     public class Program
     {
-        public static string ApplicationKey = "meetup_events_publisher";
+        public static string ApplicationKey = "meetup_events_process_manager";
 
         public static void Main(string[] args)
         {
@@ -42,42 +41,44 @@ namespace MeetupEvents.IntegrationEventsPublisher
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
-                .UseSerilog()
                 .ConfigureServices((hostContext, services) =>
                 {
-                    var connectionString = hostContext.Configuration.GetConnectionString("MeetupEvents");
-                    services.AddSingleton<GetMeetupEventId>(id =>
-                        GetMeetupEventId(() => new NpgsqlConnection(connectionString), id)
-                    );
-
-                    services.AddSingleton<GetMeetupDetails>(id =>
-                        GetMeetupDetails(() => new NpgsqlConnection(connectionString), id)
-                    );
-                    
                     services.AddMassTransit(x =>
                     {
-                        x.AddConsumer<IntegrationEventsPublisher>();
+                        x.AddConsumer<MeetupProcessManager>();
+                        x.AddRabbitMqMessageScheduler();
                         x.UsingRabbitMq((context, cfg) =>
                         {
-                            cfg.Host(hostContext.Configuration.GetValue("RabbitMQ:Host", "localhost"), "/", h =>
+                            cfg.UseDelayedExchangeMessageScheduler();
+                            cfg.Host(hostContext.Configuration["RabbitMQ:Host"] ?? "localhost", "/", h =>
                             {
                                 h.Username("guest");
                                 h.Password("guest");
                             });
 
+                            // https://masstransit-project.com/usage/exceptions.html
                             cfg.UseMessageRetry(r =>
                             {
-                                r.Interval(5, TimeSpan.FromMilliseconds(100));
-                                r.Handle<InvalidOperationException>();
+                                r.Interval(3, TimeSpan.FromMilliseconds(100));
+                                r.Handle<ApplicationException>();
                                 r.Ignore<ArgumentException>();
                             });
 
-                            cfg.ReceiveEndpoint($"{ApplicationKey}-publish-integration-events",
-                                e => e.Consumer<IntegrationEventsPublisher>(context));
+                            cfg.ReceiveEndpoint($"{ApplicationKey}",
+                                e => { e.Consumer<MeetupProcessManager>(context); });
+
+                            var commandsQueue = new Uri($"queue:meetup_events-commands");
+                            EndpointConvention.Map<CreateAttendantList>(commandsQueue);
+                            EndpointConvention.Map<Open>(commandsQueue);
+                            EndpointConvention.Map<Close>(commandsQueue);
+                            EndpointConvention.Map<Archive>(commandsQueue);
+                            EndpointConvention.Map<Start>(commandsQueue);
+                            EndpointConvention.Map<Finish>(commandsQueue);
                         });
                     });
+
                     services.AddMassTransitHostedService();
-                    
+
                     services.AddOpenTelemetryTracing(b =>
                         b.AddMassTransitInstrumentation()
                             .AddJaegerExporter(o =>

@@ -44,7 +44,7 @@ namespace MeetupEvents.IntegrationEventsPublisher
 
         public Task Consume(ConsumeContext<Canceled> context) =>
             context.Publish(
-                new IntegrationEvents.V1.MeetupCanceled(
+                new IntegrationEvents.V1.MeetupCancelled(
                     context.Message.Id,
                     context.Message.Reason,
                     context.Message.At

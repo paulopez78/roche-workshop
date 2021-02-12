@@ -15,6 +15,7 @@ services:
       ConnectionStrings__MeetupEvents: "Host=database;Database=meetupevents;Username=postgres;Password=mysecretpassword;"
       RabbitMQ__Host: rabbitmq
       SEQ_URL: http://seq:5341
+      JAEGER_HOST: jaeger
 
   meetup-events-queries:
     container_name: meetup_events_queries
@@ -29,6 +30,7 @@ services:
       ASPNETCORE_ENVIRONMENT: Development
       ConnectionStrings__MeetupEvents: "Host=database;Database=meetupevents;Username=postgres;Password=mysecretpassword;"
       SEQ_URL: http://seq:5341
+      JAEGER_HOST: jaeger
 
   meetup-events-publisher:
     container_name: meetup_events_publisher
@@ -42,6 +44,20 @@ services:
       ConnectionStrings__MeetupEvents: "Host=database;Database=meetupevents;Username=postgres;Password=mysecretpassword;"
       RabbitMQ__Host: rabbitmq
       SEQ_URL: http://seq:5341
+      JAEGER_HOST: jaeger
+
+  meetup-events-process-manager:
+    container_name: meetup_events_process_manager
+    build:
+      dockerfile: MeetupEvents.ProcessManager/Dockerfile
+      context: .
+    image: paulopez/meetup-events-process-manager
+    restart: always
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      RabbitMQ__Host: rabbitmq
+      SEQ_URL: http://seq:5341
+      JAEGER_HOST: jaeger
 
 networks:
   default:

@@ -12,6 +12,7 @@ using Npgsql;
 using MeetupEvents.Application.AttendantList;
 using MeetupEvents.Application.Meetup;
 using MeetupEvents.Infrastructure;
+using OpenTelemetry.Trace;
 using static MeetupEvents.Application.AttendantList.DomainServices;
 using static MeetupEvents.Program;
 
@@ -40,12 +41,12 @@ namespace MeetupEvents
                 GetAttendantListId(() => new NpgsqlConnection(connectionString), id)
             );
 
-
             services.AddHostedService<OutboxProcessor>();
 
             services.AddMassTransit(x =>
             {
                 x.AddConsumer<AttendantListMassTransitConsumer>();
+                x.AddConsumer<MeetupEventsMassTransitConsumer>();
                 x.UsingRabbitMq((context, cfg) =>
                 {
                     cfg.Host(Configuration.GetValue("RabbitMQ:Host", "localhost"), "/", h =>
@@ -61,8 +62,12 @@ namespace MeetupEvents
                         r.Ignore<ArgumentException>();
                     });
 
-                    cfg.ReceiveEndpoint($"{ApplicationKey}-attendant-list",
-                        e => e.Consumer<AttendantListMassTransitConsumer>(context));
+                    cfg.ReceiveEndpoint($"{ApplicationKey}-commands",
+                        e =>
+                        {
+                            e.Consumer<AttendantListMassTransitConsumer>(context);
+                            e.Consumer<MeetupEventsMassTransitConsumer>(context);
+                        });
                 });
             });
             services.AddMassTransitHostedService();
@@ -72,6 +77,16 @@ namespace MeetupEvents
             {
                 c.SwaggerDoc("v1", new OpenApiInfo {Title = "MeetupEvents", Version = "v1"});
             });
+
+            services.AddOpenTelemetryTracing(b =>
+                b.AddAspNetCoreInstrumentation()
+                    .AddMassTransitInstrumentation()
+                    .AddJaegerExporter(o =>
+                    {
+                        o.ServiceName = ApplicationKey;
+                        o.AgentHost   = Configuration["JAEGER_HOST"] ?? "localhost";
+                    })
+            );
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
