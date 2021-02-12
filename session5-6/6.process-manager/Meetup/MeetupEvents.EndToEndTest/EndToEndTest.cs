@@ -42,11 +42,15 @@ namespace MeetupEvents.EndToEndTest
 
             await CommandsClient
                 .Schedule(MicroservicesMeetup, StartTime, EndTime);
+            
 
             await CommandsClient
                 .Publish(MicroservicesMeetup);
 
             await Task.Delay(5_000);
+            
+            await CommandsClient
+                .ReduceCapacity(MicroservicesMeetup, byNumber: 7);
 
             await CommandsClient
                 .Attend(MicroservicesMeetup,

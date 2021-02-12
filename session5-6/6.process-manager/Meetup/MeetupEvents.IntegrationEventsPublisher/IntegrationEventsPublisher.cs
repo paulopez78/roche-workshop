@@ -11,6 +11,8 @@ namespace MeetupEvents.IntegrationEventsPublisher
         IConsumer<Created>,
         IConsumer<Scheduled>,
         IConsumer<Published>,
+        IConsumer<Started>,
+        IConsumer<Finished>,
         IConsumer<Canceled>,
         IConsumer<AttendantAdded>,
         IConsumer<AttendantMovedToWaiting>

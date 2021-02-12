@@ -54,13 +54,13 @@ namespace MeetupEvents.Application.AttendantList
                 Close close =>
                     Handle(
                         MapId(close.MeetupId),
-                        attendantList => attendantList.Open(_getUtcNow())
+                        attendantList => attendantList.Close(_getUtcNow())
                     ),
 
                 Archive archive =>
                     Handle(
                         MapId(archive.MeetupId),
-                        attendantList => attendantList.Open(_getUtcNow())
+                        attendantList => attendantList.Archive(_getUtcNow())
                     ),
 
                 Attend attend =>

@@ -16,7 +16,7 @@ namespace MeetupEvents.ProcessManager
         IConsumer<MeetupFinished>
     {
         public Task Consume(ConsumeContext<MeetupCreated> context)
-            => context.Send(new CreateAttendantList(Guid.NewGuid(), context.Message.MeetupEventId, 10));
+            => context.Send(new CreateAttendantList(Guid.NewGuid(), context.Message.MeetupEventId, 0));
 
         public Task Consume(ConsumeContext<MeetupScheduled> context)
         {
