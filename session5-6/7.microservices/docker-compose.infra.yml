@@ -1,0 +1,56 @@
+version: "3.7"
+
+services:
+  database:
+    image: postgres
+    environment:
+     POSTGRES_PASSWORD: mysecretpassword
+    ports:
+      - 5432:5432
+    volumes:
+      - ./postgres/data:/var/lib/postgresql/data
+
+  mongo:
+    container_name: mongo
+    image: mongo
+    ports:
+      - 27017:27017
+    #    command:
+    #      - --replSet 
+    #      - rs0
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: mysecretpassword
+    # enable replicase set for change log
+    # mongo -u root -p mysecretpassword
+    # rs.initiate();
+      
+  rabbitmq:
+    container_name: rabbitmq
+    build: 
+      context: ./docker/rabbitmq
+    image: rabbitmq-plugins
+    ports:
+      - "15672:15672"
+      - "5672:5672"
+
+  seq:
+    container_name: seq
+    image: datalust/seq
+    ports:
+      - 8080:80
+      - 5341:5341
+    environment:
+      ACCEPT_EULA: "Y"
+  
+  jaeger:
+    container_name: jaeger
+    image: jaegertracing/all-in-one
+    ports:
+      - 6831:6831/udp
+      - 16686:16686
+      
+networks:
+  default:
+    name: meetup-network
+  

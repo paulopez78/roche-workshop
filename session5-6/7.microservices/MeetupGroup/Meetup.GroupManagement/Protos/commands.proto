@@ -1,0 +1,43 @@
+syntax = "proto3";
+
+option csharp_namespace = "Meetup.GroupManagement.Contracts.Commands.V1";
+package meetup.groupmanagement;
+
+import "google/protobuf/timestamp.proto";
+
+service MeetupGroupManagement{
+  rpc Create(CreateRequest) returns (CommandReply);
+  rpc UpdateDetails(UpdateDetailsRequest) returns (CommandReply);
+  rpc Join(JoinRequest) returns (CommandReply);
+  rpc Leave(LeaveRequest) returns (CommandReply);
+}
+
+message CreateRequest{
+  string id = 1;
+  string slug = 2;
+  string organizer_id = 3;
+  string title = 4;
+  string description = 5;
+  string location = 6;
+}
+message UpdateDetailsRequest{
+  string id = 1;
+  string title = 2;
+  string description = 3;
+  string location = 4;
+}
+
+message JoinRequest{
+  string group_id = 1;
+  string user_id = 2;
+}
+
+message LeaveRequest{
+  string group_id = 1;
+  string user_id = 2;
+  string reason = 3;
+}
+
+message CommandReply{
+  string group_id = 1;
+}

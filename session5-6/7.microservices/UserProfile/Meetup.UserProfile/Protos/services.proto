@@ -1,0 +1,52 @@
+syntax = "proto3";
+
+option csharp_namespace = "Meetup.UserProfile.Contracts";
+
+package meetup.userprofile;
+
+service UserProfile{
+  rpc CreateOrUpdate(CreateOrUpdateRequest) returns (CreateOrUpdateRequest.CreateOrUpdateReply);
+  rpc Delete(DeleteRequest) returns (DeleteRequest.DeleteReply);
+  rpc Get(GetRequest) returns (GetRequest.GetReply);
+  rpc GetUsers(GetUsersRequest) returns (GetUsersRequest.GetUsersReply);
+}
+
+message CreateOrUpdateRequest{
+  string user_id = 1;
+  string first_name = 2;
+  string last_name = 3;
+  string email = 4;
+  repeated string interests = 5;
+  message CreateOrUpdateReply{
+    string user_id = 1;
+  }
+}
+
+message DeleteRequest{
+  string user_id = 1;
+  message DeleteReply{
+    string user_id = 1;
+  }
+}
+
+message GetRequest{
+  string user_id = 1;
+  message GetReply{
+    User user = 1;
+  }
+}
+
+message GetUsersRequest{
+  repeated string users = 1;
+  message GetUsersReply{
+    repeated User users = 1;
+  }
+}
+
+message User {
+  string user_id = 1;
+  string first_name = 2;
+  string last_name = 3;
+  string email = 4;
+  repeated string interests = 5;
+}
