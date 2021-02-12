@@ -65,7 +65,7 @@ namespace MeetupEvents.Domain
 
             Status = MeetupEventStatus.Published;
             
-            _changes.Add(new Published(Id, at));
+            _changes.Add(new Published(Id, GroupId, at));
         }
 
         public void Cancel(DateTimeOffset at, string? reason = null )
@@ -75,7 +75,7 @@ namespace MeetupEvents.Domain
             Status             = MeetupEventStatus.Cancelled;
             CancellationReason = reason;
             
-            _changes.Add(new Canceled(Id, CancellationReason!, at));
+            _changes.Add(new Canceled(Id, GroupId, CancellationReason!, at));
         }
 
         public void Start()

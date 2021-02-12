@@ -67,7 +67,7 @@ namespace Meetup.Notifications.Application
                     break;
 
                 case Commands.V1.NotifyMeetupPublished published:
-                    var members = await GetGroupMembers(published.GroupSlug);
+                    var members = await GetGroupMembers(published.GroupId);
 
                     if (members.Any())
                         await DbCollection.InsertManyAsync(
@@ -83,7 +83,7 @@ namespace Meetup.Notifications.Application
                     break;
 
                 case Commands.V1.NotifyMeetupCancelled cancelled:
-                    var attendants = await GetMeetupAttendants(cancelled.MeetupId, cancelled.GroupSlug);
+                    var attendants = await GetMeetupAttendants(cancelled.MeetupId);
 
                     if (attendants.Any())
                         await DbCollection.InsertManyAsync(

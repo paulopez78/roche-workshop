@@ -8,7 +8,7 @@ using Meetup.GroupManagement.Contracts.Queries.V1;
 using Meetup.Notifications.Queries.Contracts.V1;
 using Meetup.UserProfile.Contracts;
 using Microsoft.AspNetCore.Mvc;
-using static Meetup.Scheduling.ReadModels.V1;
+using static MeetupEvents.Contracts.ReadModels.V1;
 
 namespace Meetup.Queries
 {
@@ -61,11 +61,11 @@ namespace Meetup.Queries
                         Event = Map(meetupEvent.Result),
                     };
 
-                    var users = await GetUsers(meetupEvent.Result.Attendants.Select(x => x.UserId));
+                    var users = await GetUsers(meetupEvent.Result.Attendants.Select(x => x.MemberId));
 
                     foreach (var attendant in meetupEvent.Result.Attendants)
                     {
-                        var foundUser = users.FirstOrDefault(x => x.UserId == attendant.UserId.ToString());
+                        var foundUser = users.FirstOrDefault(x => x.UserId == attendant.MemberId.ToString());
                         if (foundUser is not null)
                         {
                             var combined = new ReadModels.V1.Attendant(

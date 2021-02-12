@@ -21,8 +21,6 @@ namespace MeetupEvents.Contracts
             public record Attend(Guid MeetupId, Guid MemberId);
 
             public record CancelAttendance(Guid MeetupId, Guid MemberId);
-
-            public record RemoveAttendantFromMeetups(Guid MemberId, Guid GroupId);
         }
     }
 }

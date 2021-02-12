@@ -4,16 +4,15 @@ using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
-using Grpc.Core;
 using Meetup.GroupManagement.Contracts.Queries.V1;
-using Meetup.Scheduling.Queries;
+using MeetupEvents.Contracts;
 using static System.Linq.Enumerable;
 
 namespace Meetup.Notifications.Application
 {
-    public delegate Task<IEnumerable<string>> GetGroupMembers(string groupSlug);
+    public delegate Task<IEnumerable<string>> GetGroupMembers(Guid groupId);
 
-    public delegate Task<IEnumerable<Guid>> GetMeetupAttendants(Guid meetupId, string groupSlug);
+    public delegate Task<IEnumerable<Guid>> GetMeetupAttendants(Guid meetupId);
 
     public delegate Task<IEnumerable<Guid>> GetInterestedUsers(Guid groupId);
 
@@ -22,9 +21,9 @@ namespace Meetup.Notifications.Application
     public static class ExternalServices
     {
         public static GetGroupMembers GetGroupMembers(Func<MeetupGroupQueries.MeetupGroupQueriesClient> getClient)
-            => async groupSlug =>
+            => async groupId =>
             {
-                var group = await getClient().GetAsync(new GetGroup {GroupSlug = groupSlug});
+                var group = await getClient().GetAsync(new GetGroup {GroupId = groupId.ToString()});
                 return group?.Group?.Members.Select(x => x.UserId);
             };
 
@@ -36,13 +35,13 @@ namespace Meetup.Notifications.Application
             };
 
         public static GetMeetupAttendants GetMeetupAttendants(Func<HttpClient> getClient)
-            => async (meetupId, groupSlug) =>
+            => async (meetupId) =>
             {
-                var response = await getClient().GetAsync($"/api/meetup/{groupSlug}/events/{meetupId}");
+                var response = await getClient().GetAsync($"/api/meetup/events/{meetupId}");
                 response.EnsureSuccessStatusCode();
 
-                var meetup = await response.Content.ReadFromJsonAsync<MeetupEvent>();
-                return meetup?.Attendants?.Select(x => x.UserId);
+                var meetup = await response.Content.ReadFromJsonAsync<ReadModels.V1.MeetupEvent>();
+                return meetup?.Attendants?.Select(x => x.MemberId);
             };
 
         public static GetInterestedUsers GetInterestedUsers()

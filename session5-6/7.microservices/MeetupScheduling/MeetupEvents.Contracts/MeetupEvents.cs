@@ -16,9 +16,9 @@ namespace MeetupEvents.Contracts
 
             public record Scheduled(Guid Id, DateTimeOffset Start, DateTimeOffset End);
 
-            public record Published(Guid Id, DateTimeOffset At);
+            public record Published(Guid Id, Guid GroupId, DateTimeOffset At);
 
-            public record Canceled(Guid Id, string Reason, DateTimeOffset At);
+            public record Canceled(Guid Id, Guid GroupId, string Reason, DateTimeOffset At);
 
             public record Started(Guid Id);
 

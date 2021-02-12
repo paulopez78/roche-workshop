@@ -21,7 +21,7 @@ namespace Meetup.EndToEndTest
             using var tracerProvider = Sdk.CreateTracerProviderBuilder()
                 .AddHttpClientInstrumentation()
                 .AddGrpcClientInstrumentation()
-                .AddJaegerExporter(b => b.ServiceName=nameof(EndToEndTest))
+                .AddJaegerExporter(b => b.ServiceName = nameof(EndToEndTest))
                 .Build();
 
             await Fixture.UserProfile
@@ -29,7 +29,7 @@ namespace Meetup.EndToEndTest
 
             await Fixture.GroupManagementCommands
                 .StartMeetupGroup(
-                    NetCoreBcn,
+                    NetCoreBcn.ToString(),
                     "Barcelona .NET Core",
                     "This is an awesome group",
                     groupSlug: NetCoreBcnSlug,
@@ -39,16 +39,15 @@ namespace Meetup.EndToEndTest
 
             // Add some members to the group
             await Fixture.GroupManagementCommands
-                .AddGroupMember(NetCoreBcn, Joe, Carla, Alice, Bob);
+                .AddGroupMember(NetCoreBcn.ToString(), Joe, Carla, Alice, Bob);
 
             // create meetup
             await Fixture.MeetupSchedulingCommands
                 .CreateMeetup(
                     MicroservicesMeetup,
-                    NetCoreBcnSlug,
+                    NetCoreBcn,
                     "Microservices failures",
-                    "This is a talk about failures",
-                    capacity: 2
+                    "This is a talk about failures"
                 );
 
             await Fixture.MeetupSchedulingCommands
@@ -63,6 +62,9 @@ namespace Meetup.EndToEndTest
             await Task.Delay(5_000);
 
             await Fixture.MeetupSchedulingCommands
+                .ReduceCapacity(MicroservicesMeetup, byNumber: 7);
+
+            await Fixture.MeetupSchedulingCommands
                 .Attend(MicroservicesMeetup,
                     Joe,
                     Carla,
@@ -71,7 +73,7 @@ namespace Meetup.EndToEndTest
                 );
 
             await Fixture.MeetupSchedulingCommands
-                .DontAttend(MicroservicesMeetup, Joe);
+                .CancelAttendance(MicroservicesMeetup, Joe);
 
             await Fixture.MeetupSchedulingCommands
                 .ReduceCapacity(MicroservicesMeetup, byNumber: 1);
@@ -80,14 +82,14 @@ namespace Meetup.EndToEndTest
                 .IncreaseCapacity(MicroservicesMeetup, byNumber: 1);
 
             await Fixture.GroupManagementCommands
-                .LeaveGroup(NetCoreBcn, Alice);
+                .LeaveGroup(NetCoreBcn.ToString(), Alice);
 
             await Fixture.MeetupSchedulingCommands
                 .Attend(MicroservicesMeetup, Joe);
 
             // assert
             await Task.Delay(35_000);
-            var meetup = await Fixture.MeetupSchedulingQueries.Get(NetCoreBcnSlug, MicroservicesMeetup);
+            var meetup = await Fixture.MeetupSchedulingQueries.Get(MicroservicesMeetup);
 
             meetup.Status.Should().Be("Finished");
             meetup.AttendantListStatus.Should().Be("Archived");
@@ -122,9 +124,9 @@ namespace Meetup.EndToEndTest
                 .ShouldHaveReceived();
         }
 
-        string NetCoreBcnSlug      = $"netcorebcn-{NewGuid()}";
-        string NetCoreBcn          = NewGuid().ToString();
-        Guid   MicroservicesMeetup = NewGuid();
+        static Guid   NetCoreBcn          = NewGuid();
+        static string NetCoreBcnSlug      = $"netcorebcn-{NetCoreBcn}";
+        static Guid   MicroservicesMeetup = NewGuid();
 
         DateTimeOffset StartTime = DateTimeOffset.UtcNow.AddSeconds(15);
         DateTimeOffset EndTime   = DateTimeOffset.UtcNow.AddSeconds(30);

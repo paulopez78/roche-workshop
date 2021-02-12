@@ -41,6 +41,7 @@ namespace MeetupEvents.IntegrationEventsPublisher
             await context.Publish(
                 new IntegrationEvents.V1.MeetupPublished(
                     context.Message.Id,
+                    context.Message.GroupId,
                     context.Message.At
                 )
             );
@@ -50,6 +51,7 @@ namespace MeetupEvents.IntegrationEventsPublisher
             await context.Publish(
                 new IntegrationEvents.V2.MeetupPublished(
                     context.Message.Id,
+                    context.Message.GroupId,
                     meetup.Title,
                     meetup.Description
                 )
@@ -60,6 +62,7 @@ namespace MeetupEvents.IntegrationEventsPublisher
             context.Publish(
                 new IntegrationEvents.V1.MeetupCancelled(
                     context.Message.Id,
+                    context.Message.GroupId,
                     context.Message.Reason,
                     context.Message.At
                 )

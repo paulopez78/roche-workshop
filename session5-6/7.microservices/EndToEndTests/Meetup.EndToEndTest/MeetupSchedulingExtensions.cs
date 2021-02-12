@@ -2,80 +2,71 @@
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Json;
-using System.Text;
-using System.Text.Json;
 using System.Threading.Tasks;
-using static Meetup.Scheduling.Contracts.AttendantListCommands.V1;
-using static Meetup.Scheduling.Contracts.MeetupDetailsCommands.V1;
-using static Meetup.Scheduling.Contracts.ReadModels.V1;
+using MeetupEvents.Contracts;
 using static Meetup.EndToEndTest.UserProfileExtensions;
 
 namespace Meetup.EndToEndTest
 {
     public static class MeetupSchedulingExtensions
     {
-        const string BaseUrl = "/api/meetup";
+        const string BaseUrl = "/api/meetup/events";
 
-        public static async Task<HttpResponseMessage> CreateMeetup(
-            this HttpClient client, Guid meetupId, string group, string title, string description, int capacity)
-            => await client.Post("events/details", new CreateMeetup(
-                meetupId, group, title, description, capacity)
-            );
+        public static Task<HttpResponseMessage> CreateMeetup(this HttpClient client, Guid id, Guid groupId,
+            string title, string description) =>
+            client.PostAsJsonAsync(BaseUrl, new MeetupCommands.V1.Create(id, groupId, title, description));
 
-        public static Task<HttpResponseMessage> Schedule(this HttpClient client, Guid eventId, DateTimeOffset start,
-            DateTimeOffset end)
-            => client.Put($"events/schedule", new Schedule(eventId, start, end));
+        public static Task<HttpResponseMessage> UpdateDetails(this HttpClient client, Guid id, string title,
+            string description) =>
+            client.PutAsJsonAsync($"{BaseUrl}/details",
+                new MeetupCommands.V1.UpdateDetails(id, title, description));
 
-        public static Task<HttpResponseMessage> MakeOnline(this HttpClient client, Guid eventId, string url)
-            => client.Put($"events/makeonline", new MakeOnline(eventId, url));
+        public static Task<HttpResponseMessage> Publish(this HttpClient client, Guid id) =>
+            client.PutAsJsonAsync($"{BaseUrl}/publish", new MeetupCommands.V1.Publish(id));
 
-        public static Task<HttpResponseMessage> Publish(this HttpClient client, Guid eventId)
-            => client.Put($"events/publish", new Publish(eventId));
+        public static Task<HttpResponseMessage> Schedule(this HttpClient client, Guid id, DateTimeOffset start,
+            DateTimeOffset end) =>
+            client.PutAsJsonAsync($"{BaseUrl}/schedule", new MeetupCommands.V1.Schedule(id, start, end));
 
-        public static async Task Attend(this HttpClient client, Guid eventId, params User[] users)
+        public static Task<HttpResponseMessage> MakeOnline(this HttpClient client, Guid id, string url) =>
+            client.PutAsJsonAsync($"{BaseUrl}/online",
+                new MeetupCommands.V1.MakeOnline(id, new Uri(url)));
+
+        public static Task<HttpResponseMessage> Cancel(this HttpClient client, Guid id, string reason = "") =>
+            client.PutAsJsonAsync($"{BaseUrl}/cancel", new MeetupCommands.V1.Cancel(id, reason));
+
+        public static async Task Attend(this HttpClient client, Guid meetupId, params User[] members)
         {
-            foreach (var user in users)
-                await client.Put($"attendants/add", new Attend(eventId, user.Id));
+            foreach (var member in members)
+                await client.PutAsJsonAsync($"{BaseUrl}/attendants/attend",
+                    new AttendantListCommands.V1.Attend(meetupId, member.Id));
+        }
+        
+        public static async Task CancelAttendance(this HttpClient client, Guid meetupId, params User[] members)
+        {
+            foreach (var member in members)
+                await client.PutAsJsonAsync($"{BaseUrl}/attendants/cancel",
+                    new AttendantListCommands.V1.CancelAttendance(meetupId, member.Id));
         }
 
-        public static Task<HttpResponseMessage> IncreaseCapacity(this HttpClient client, Guid eventId, int byNumber) =>
-            client.Put($"attendants/capacity/increase", new IncreaseCapacity(eventId, byNumber));
+        public static Task<HttpResponseMessage> ReduceCapacity(this HttpClient client, Guid meetupId, int byNumber) =>
+            client.PutAsJsonAsync($"{BaseUrl}/attendants/reduce",
+                new AttendantListCommands.V1.ReduceCapacity(meetupId, byNumber));
 
-        public static Task<HttpResponseMessage> ReduceCapacity(this HttpClient client, Guid eventId, int byNumber) =>
-            client.Put($"attendants/capacity/reduce", new ReduceCapacity(eventId, byNumber));
+        public static Task<HttpResponseMessage> IncreaseCapacity(this HttpClient client, Guid meetupId, int byNumber) =>
+            client.PutAsJsonAsync($"{BaseUrl}/attendants/increase",
+                new AttendantListCommands.V1.IncreaseCapacity(meetupId, byNumber));
+        
+        public static Task<ReadModels.V1.MeetupEvent> Get(this HttpClient client, Guid meetupId) =>
+            client.GetFromJsonAsync<ReadModels.V1.MeetupEvent>($"{BaseUrl}/{meetupId}" );
+        
+        public static bool Going(this ReadModels.V1.MeetupEvent meetup, User member)
+            => meetup.Attendants.Any(x => x.MemberId == member.Id && !x.Waiting);
 
-        public static Task<HttpResponseMessage> DontAttend(this HttpClient client, Guid eventId, User user) =>
-            client.Put($"attendants/remove", new DontAttend(eventId, user.Id));
+        public static bool NotGoing(this ReadModels.V1.MeetupEvent meetup, User member)
+            => meetup.Attendants.All(x => x.MemberId != member.Id);
 
-        public static async Task<MeetupEvent> Get(this HttpClient client,
-            string groupSlug, Guid eventId, int delay = 2000)
-        {
-            // eventual consistency hack, better to poll (query) checking consistency with a timeout
-            await Task.Delay(delay);
-
-            var queryResponse = await client.GetAsync($"{BaseUrl}/{groupSlug}/events/{eventId}");
-            queryResponse.EnsureSuccessStatusCode();
-
-            var queryResult = await queryResponse.Content.ReadFromJsonAsync<MeetupEvent>();
-            return queryResult;
-        }
-
-        static Task<HttpResponseMessage> Put(this HttpClient client, string url, object command) =>
-            client.PutAsync($"{BaseUrl}/{url}", Serialize(command));
-
-        static Task<HttpResponseMessage> Post(this HttpClient client, string url, object command) =>
-            client.PostAsync($"{BaseUrl}/{url}", Serialize(command));
-
-        static StringContent Serialize(object command)
-            => new(JsonSerializer.Serialize(command), Encoding.UTF8, "application/json");
-
-        public static bool Going(this MeetupEvent meetup, User user) =>
-            meetup.Attendants.Any(x => x.UserId == user.Id && !x.Waiting);
-
-        public static bool Waiting(this MeetupEvent meetup, User user) =>
-            meetup.Attendants.Any(x => x.UserId == user.Id && x.Waiting);
-
-        public static bool NotGoing(this MeetupEvent meetup, User user) =>
-            meetup.Attendants.All(x => x.UserId != user.Id);
+        public static bool Waiting(this ReadModels.V1.MeetupEvent meetup, User member)
+            => meetup.Attendants.Any(x => x.MemberId == member.Id && x.Waiting);
     }
 }
