@@ -10,12 +10,10 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using Npgsql;
 using MeetupEvents.Application.AttendantList;
-using MeetupEvents.Application.Integrations;
 using MeetupEvents.Application.Meetup;
 using MeetupEvents.Infrastructure;
-using MeetupEvents.Queries;
 using static MeetupEvents.Application.AttendantList.DomainServices;
-using static MeetupEvents.Application.Integrations.DomainServices;
+using static MeetupEvents.Program;
 
 namespace MeetupEvents
 {
@@ -42,22 +40,12 @@ namespace MeetupEvents
                 GetAttendantListId(() => new NpgsqlConnection(connectionString), id)
             );
 
-            services.AddSingleton<GetMeetupEventId>(id =>
-                GetMeetupEventId(() => new NpgsqlConnection(connectionString), id)
-            );
 
-            services.AddSingleton<GetMeetupDetails>(id =>
-                GetMeetupDetails(() => new NpgsqlConnection(connectionString), id)
-            );
-
-            services.AddSingleton(new MeetupEventQueries(() => new NpgsqlConnection(connectionString)));
             services.AddHostedService<OutboxProcessor>();
 
             services.AddMassTransit(x =>
             {
                 x.AddConsumer<AttendantListMassTransitConsumer>();
-                x.AddConsumer<IntegrationEventsDispatcher>();
-
                 x.UsingRabbitMq((context, cfg) =>
                 {
                     cfg.Host(Configuration.GetValue("RabbitMQ:Host", "localhost"), "/", h =>
@@ -73,11 +61,8 @@ namespace MeetupEvents
                         r.Ignore<ArgumentException>();
                     });
 
-                    cfg.ReceiveEndpoint("attendant-list",
+                    cfg.ReceiveEndpoint($"{ApplicationKey}-attendant-list",
                         e => e.Consumer<AttendantListMassTransitConsumer>(context));
-
-                    cfg.ReceiveEndpoint("publish-integration-events",
-                        e => e.Consumer<IntegrationEventsDispatcher>(context));
                 });
             });
             services.AddMassTransitHostedService();

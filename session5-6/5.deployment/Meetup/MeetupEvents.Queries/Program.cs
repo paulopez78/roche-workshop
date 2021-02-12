@@ -1,16 +1,14 @@
 using System;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
 using static System.Environment;
-using MeetupEvents.Infrastructure;
 
-namespace MeetupEvents
+namespace MeetupEvents.Queries
 {
-    public static class Program
+    public class Program
     {
-        public static string ApplicationKey = "meetup_events";
+        public static string ApplicationKey = "meetup_events_queries";
 
         public static void Main(string[] args)
         {
@@ -24,15 +22,7 @@ namespace MeetupEvents
             try
             {
                 Log.Information("Starting up");
-                var builder = CreateHostBuilder(args).Build();
-
-                using (var scope = builder.Services.CreateScope())
-                {
-                    var dbContext = scope.ServiceProvider.GetRequiredService<MeetupEventsDbContext>();
-                    dbContext.Database?.EnsureCreated();
-                }
-
-                builder.Run();
+                CreateHostBuilder(args).Build().Run();
             }
             catch (Exception ex)
             {

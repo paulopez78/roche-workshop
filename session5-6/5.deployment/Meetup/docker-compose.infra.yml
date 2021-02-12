@@ -18,6 +18,15 @@ services:
     ports:
       - "15672:15672"
       - "5672:5672"
+
+  seq:
+    container_name: seq
+    image: datalust/seq
+    ports:
+      - 8080:80
+      - 5341:5341
+    environment:
+      ACCEPT_EULA: "Y"
   
 networks:
   default:

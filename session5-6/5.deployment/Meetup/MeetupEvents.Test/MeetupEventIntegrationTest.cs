@@ -12,18 +12,21 @@ using Xunit;
 using Xunit.Abstractions;
 using static System.Guid;
 using MeetupEvents.Contracts;
+using MeetupEvents.Queries;
 using static MeetupEvents.Contracts.MeetupCommands.V1;
 
 namespace MeetupEvents.Test
 {
     public class MeetupEventIntegrationTest : IClassFixture<WebTestFixture>
     {
-        readonly HttpClient _client;
+        readonly HttpClient         _client;
+        readonly MeetupEventQueries _queries;
 
         public MeetupEventIntegrationTest(WebTestFixture fixture, ITestOutputHelper testOutputHelper)
         {
             fixture.Output = testOutputHelper;
             _client        = fixture.CreateClient();
+            _queries       = fixture.Queries;
         }
 
         [Fact]
@@ -199,7 +202,7 @@ namespace MeetupEvents.Test
                 new AttendantListCommands.V1.ReduceCapacity(meetupId, byNumber));
 
         Task<ReadModels.V1.MeetupEvent> Get(Guid id) =>
-            _client.GetFromJsonAsync<ReadModels.V1.MeetupEvent>($"/api/meetup/events/{id}");
+            _queries.Handle(new Contracts.Queries.V1.Get(id));
 
         AsyncRetryPolicy<HttpResponseMessage> Retry()
         {
