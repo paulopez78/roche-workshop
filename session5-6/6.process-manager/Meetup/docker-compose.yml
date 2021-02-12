@@ -1,0 +1,48 @@
+version: "3.7"
+
+services:
+  meetup-events:
+    container_name: meetup_events
+    build:
+      dockerfile: MeetupEvents/Dockerfile
+      context: .
+    image: paulopez/meetup-events
+    restart: always
+    ports:
+      - 5000:80
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__MeetupEvents: "Host=database;Database=meetupevents;Username=postgres;Password=mysecretpassword;"
+      RabbitMQ__Host: rabbitmq
+      SEQ_URL: http://seq:5341
+
+  meetup-events-queries:
+    container_name: meetup_events_queries
+    build:
+      dockerfile: MeetupEvents.Queries/Dockerfile
+      context: .
+    image: paulopez/meetup-events-queries
+    restart: always
+    ports:
+      - 7000:80
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__MeetupEvents: "Host=database;Database=meetupevents;Username=postgres;Password=mysecretpassword;"
+      SEQ_URL: http://seq:5341
+
+  meetup-events-publisher:
+    container_name: meetup_events_publisher
+    build:
+      dockerfile: MeetupEvents.IntegrationEventsPublisher/Dockerfile
+      context: .
+    image: paulopez/meetup-events-publisher
+    restart: always
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__MeetupEvents: "Host=database;Database=meetupevents;Username=postgres;Password=mysecretpassword;"
+      RabbitMQ__Host: rabbitmq
+      SEQ_URL: http://seq:5341
+
+networks:
+  default:
+    name: meetup-network
