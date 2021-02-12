@@ -12,6 +12,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MeetupEvents.IntegrationEve
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MeetupEvents.ProcessManager", "MeetupEvents.ProcessManager\MeetupEvents.ProcessManager.csproj", "{F7858DD2-ADDA-4D12-BF65-0D34E36EE1B5}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MeetupEvents.EndToEndTest", "MeetupEvents.EndToEndTest\MeetupEvents.EndToEndTest.csproj", "{209FE552-FE7B-469B-9063-ED6A205428D4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -42,5 +44,9 @@ Global
 		{F7858DD2-ADDA-4D12-BF65-0D34E36EE1B5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F7858DD2-ADDA-4D12-BF65-0D34E36EE1B5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F7858DD2-ADDA-4D12-BF65-0D34E36EE1B5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{209FE552-FE7B-469B-9063-ED6A205428D4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{209FE552-FE7B-469B-9063-ED6A205428D4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{209FE552-FE7B-469B-9063-ED6A205428D4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{209FE552-FE7B-469B-9063-ED6A205428D4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

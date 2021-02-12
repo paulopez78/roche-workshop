@@ -20,7 +20,7 @@ namespace MeetupEvents.Test
             meetup.Status.Should().Be(MeetupEventStatus.Draft);
 
             meetup.Changes.Should().HaveCount(1);
-            var created = meetup.Changes.OfType<MeetupCreated>().FirstOrDefault();
+            var created = meetup.Changes.OfType<Created>().FirstOrDefault();
             created.Should().NotBeNull();
             created?.Id.Should().Be(meetup.Id);
             created?.Title.Should().Be(meetup.Details.Title);
@@ -53,7 +53,7 @@ namespace MeetupEvents.Test
 
             var changes = meetup.Changes.ToArray();
             changes.Should().HaveCount(5);
-            changes[0].Should().BeOfType<MeetupCreated>();
+            changes[0].Should().BeOfType<Created>();
             changes[1].Should().BeOfType<Scheduled>();
             changes[2].Should().BeOfType<MadeOnline>();
             changes[3].Should().BeOfType<Published>();

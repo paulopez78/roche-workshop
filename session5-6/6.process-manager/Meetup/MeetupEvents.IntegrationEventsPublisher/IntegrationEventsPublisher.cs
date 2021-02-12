@@ -8,6 +8,8 @@ using static MeetupEvents.Contracts.MeetupEvents.V1;
 namespace MeetupEvents.IntegrationEventsPublisher
 {
     public class IntegrationEventsPublisher :
+        IConsumer<Created>,
+        IConsumer<Scheduled>,
         IConsumer<Published>,
         IConsumer<Canceled>,
         IConsumer<AttendantAdded>,
@@ -21,6 +23,16 @@ namespace MeetupEvents.IntegrationEventsPublisher
             _getMeetupDetails = getMeetupDetails;
             _getMeetupId      = getMeetupEventId;
         }
+
+        public Task Consume(ConsumeContext<Created> context) =>
+            context.Publish(
+                new IntegrationEvents.V1.MeetupCreated(context.Message.Id)
+            );
+
+        public Task Consume(ConsumeContext<Scheduled> context) =>
+            context.Publish(
+                new IntegrationEvents.V1.MeetupScheduled(context.Message.Id, context.Message.Start, context.Message.End)
+            );
 
         public async Task Consume(ConsumeContext<Published> context)
         {
@@ -74,6 +86,16 @@ namespace MeetupEvents.IntegrationEventsPublisher
                 )
             );
         }
+
+        public Task Consume(ConsumeContext<Started> context) =>
+            context.Publish(
+                new IntegrationEvents.V1.MeetupStarted(context.Message.Id)
+            );
+
+        public Task Consume(ConsumeContext<Finished> context) =>
+            context.Publish(
+                new IntegrationEvents.V1.MeetupFinished(context.Message.Id)
+            );
 
         async Task<Guid> GetMeetupEventId(Guid attendantListId)
         {

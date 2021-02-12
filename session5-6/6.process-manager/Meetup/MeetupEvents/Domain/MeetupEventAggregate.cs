@@ -22,7 +22,7 @@ namespace MeetupEvents.Domain
             Details = details;
             Status  = MeetupEventStatus.Draft;
             
-            _changes.Add(new MeetupCreated(id, groupId, details.Title, details.Description));
+            _changes.Add(new Created(id, groupId, details.Title, details.Description));
         }
 
         public void UpdateDetails(Details details)

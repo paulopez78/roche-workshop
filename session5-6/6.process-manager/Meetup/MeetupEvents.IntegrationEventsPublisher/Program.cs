@@ -72,7 +72,7 @@ namespace MeetupEvents.IntegrationEventsPublisher
                                 r.Ignore<ArgumentException>();
                             });
 
-                            cfg.ReceiveEndpoint($"{ApplicationKey}-publish-integration-events",
+                            cfg.ReceiveEndpoint($"meetup_events-publish",
                                 e => e.Consumer<IntegrationEventsPublisher>(context));
                         });
                     });

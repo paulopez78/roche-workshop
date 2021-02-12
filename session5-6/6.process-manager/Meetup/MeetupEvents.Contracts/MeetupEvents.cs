@@ -6,7 +6,7 @@ namespace MeetupEvents.Contracts
     {
         public static class V1
         {
-            public record MeetupCreated(Guid Id, Guid GroupId, string Title, string Description);
+            public record Created(Guid Id, Guid GroupId, string Title, string Description);
 
             public record DetailsUpdated(Guid Id, string Title, string Description);
 

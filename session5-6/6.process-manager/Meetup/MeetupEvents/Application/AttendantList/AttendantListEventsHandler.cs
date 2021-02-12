@@ -8,7 +8,7 @@ using static MeetupEvents.Contracts.AttendantListCommands.V1;
 namespace MeetupEvents.Application.AttendantList
 {
     public class AttendantListEventsHandler :
-        IEventHandler<MeetupCreated>,
+        IEventHandler<Created>,
         IEventHandler<Published>,
         IEventHandler<Canceled>
     {
@@ -17,7 +17,7 @@ namespace MeetupEvents.Application.AttendantList
         public AttendantListEventsHandler(ApplicationServiceBuilder<AttendantListApplicationService> builder) =>
             _applicationService = builder.Build();
 
-        public Task Handle(MeetupCreated created) =>
+        public Task Handle(Created created) =>
             _applicationService.Handle(new CreateAttendantList(NewGuid(), created.Id, 10));
 
         public Task Handle(Published created) =>
