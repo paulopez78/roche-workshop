@@ -13,7 +13,7 @@ namespace MeetupEvents.Queries
 
         public MeetupEventsQueriesApi(MeetupEventQueries queries) => _queries = queries;
 
-        [HttpGet("{group:Guid}/events")]
+        [HttpGet("{groupId:Guid}/events")]
         public async Task<IActionResult> GetByGroup(Guid groupId)
             => Ok(
                 await _queries.Handle(new GetByGroup(groupId))

@@ -18,7 +18,7 @@ namespace MeetupEvents.Contracts
                 public DateTime        End                 { get; set; }
                 public string          Url                 { get; set; }
                 public string          Address             { get; set; }
-                public bool            Online              { get; set; }
+                public bool            IsOnline            { get; set; }
                 public string          Status              { get; set; }
                 public Guid            AttendantListId     { get; set; }
                 public int             Capacity            { get; set; }

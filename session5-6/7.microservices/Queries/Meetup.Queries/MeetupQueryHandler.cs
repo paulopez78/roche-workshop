@@ -89,7 +89,7 @@ namespace Meetup.Queries
 
         ReadModels.V1.Event Map(MeetupEvent source)
             => new(source.Id.ToString(), source.Title, source.Description, source.Capacity, source.Status, source.Start,
-                source.End, source.Online ? source.Url : source.Address, source.Online);
+                source.End, source.IsOnline ? source.Url : source.Address, source.IsOnline);
 
         ReadModels.V1.Group Map(GetGroup.Types.Group source)
             => new(source.Id, source.Title, source.Description);
@@ -105,7 +105,7 @@ namespace Meetup.Queries
 
         async Task<IEnumerable<MeetupEvent>> GetMeetupEvents(Guid groupId)
         {
-            var queryResponse = await SchedulingClient.GetAsync($"api/meetup/{groupId}/");
+            var queryResponse = await SchedulingClient.GetAsync($"api/meetup/{groupId}/events");
             queryResponse.EnsureSuccessStatusCode();
 
             var queryResult = await queryResponse.Content.ReadFromJsonAsync<IEnumerable<MeetupEvent>>();
