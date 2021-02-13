@@ -8,6 +8,7 @@ using Serilog;
 using static System.Environment;
 using static MeetupEvents.Contracts.MeetupCommands.V1;
 using static MeetupEvents.Contracts.AttendantListCommands.V1;
+using static Meetup.Notifications.Contracts.Commands.V1;
 
 namespace MeetupEvents.ProcessManager
 {
@@ -67,13 +68,20 @@ namespace MeetupEvents.ProcessManager
                             cfg.ReceiveEndpoint($"{ApplicationKey}",
                                 e => { e.Consumer<MeetupProcessManager>(context); });
 
-                            var commandsQueue = new Uri($"queue:meetup_events-commands");
-                            EndpointConvention.Map<CreateAttendantList>(commandsQueue);
-                            EndpointConvention.Map<Open>(commandsQueue);
-                            EndpointConvention.Map<Close>(commandsQueue);
-                            EndpointConvention.Map<Archive>(commandsQueue);
-                            EndpointConvention.Map<Start>(commandsQueue);
-                            EndpointConvention.Map<Finish>(commandsQueue);
+                            var meetupQueue = new Uri($"queue:meetup_events-commands");
+                            EndpointConvention.Map<CreateAttendantList>(meetupQueue);
+                            EndpointConvention.Map<Open>(meetupQueue);
+                            EndpointConvention.Map<Close>(meetupQueue);
+                            EndpointConvention.Map<Archive>(meetupQueue);
+                            EndpointConvention.Map<Start>(meetupQueue);
+                            EndpointConvention.Map<Finish>(meetupQueue);
+                            EndpointConvention.Map<RemoveAttendantFromMeetups>(meetupQueue);
+                            
+                            var notificationsQueue = new Uri($"queue:meetup_notifications-commands");
+                            EndpointConvention.Map<NotifyMeetupPublished>(notificationsQueue);
+                            EndpointConvention.Map<NotifyMeetupCancelled>(notificationsQueue);
+                            EndpointConvention.Map<NotifyMeetupAttendantWaiting>(notificationsQueue);
+                            EndpointConvention.Map<NotifyMeetupAttendantGoing>(notificationsQueue);
                         });
                     });
 

@@ -12,7 +12,8 @@ namespace MeetupEvents.Queries
     {
         const string BaseQuery =
             "SELECT " +
-            "M.\"Id\", M.\"GroupId\", M.\"Title\", M.\"Description\", M.\"Status\", " +
+            "M.\"Id\", M.\"GroupId\", M.\"Title\", M.\"Description\", M.\"Start\", M.\"End\", " +
+            "M.\"Url\",M.\"Address\", M.\"IsOnline\", M.\"Status\", " +
             "AL.\"Id\" AS AttendantListId, AL.\"Capacity\", AL.\"Status\" AS AttendantListStatus, " +
             "A.\"Id\", A.\"MemberId\", A.\"AddedAt\", A.\"Waiting\" " +
             "FROM \"MeetupEvent\" M " +

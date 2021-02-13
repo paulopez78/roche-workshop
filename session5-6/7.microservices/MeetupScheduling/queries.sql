@@ -4,14 +4,21 @@ FROM "MeetupEvent" M
          LEFT JOIN "Attendant" A on AL."Id" = A."AttendantListAggregateId"
 ORDER BY A."AddedAt";
          
-SELECT * FROM "Outbox";
-
 SELECT M."Id", M."GroupId", M."Title", M."Description", M."Status", AL."Id" AS AttendantListId, AL."Capacity", AL."Status" AS AttendantListStatus, A."Id", A."MemberId", A."AddedAt", A."Waiting" 
 FROM "MeetupEvent" M 
 LEFT JOIN "AttendantList" AL on M."Id" = AL."MeetupEventId" 
 LEFT JOIN "Attendant" A on AL."Id" = A."AttendantListAggregateId" ORDER BY A."AddedAt";
 
+SELECT M."Id"
+FROM "MeetupEvent" M
+LEFT JOIN "AttendantList" AL ON M."Id" = AL."MeetupEventId"
+LEFT JOIN "Attendant" A on AL."Id" = A."AttendantListAggregateId"
+WHERE M."GroupId" = GroupId AND A."MemberId" = MemberId
+
+SELECT * FROM "Outbox";
+
 DELETE FROM "Attendant";
 DELETE FROM "AttendantList";
 DELETE FROM "MeetupEvent";
 DELETE FROM "Outbox";
+

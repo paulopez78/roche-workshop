@@ -14,9 +14,10 @@ namespace MeetupEvents.Contracts
                 public Guid            GroupId             { get; set; }
                 public string          Title               { get; set; }
                 public string          Description         { get; set; }
-                public DateTimeOffset  Start               { get; set; }
-                public DateTimeOffset  End                 { get; set; }
-                public string          Location            { get; set; }
+                public DateTime        Start               { get; set; }
+                public DateTime        End                 { get; set; }
+                public string          Url                 { get; set; }
+                public string          Address             { get; set; }
                 public bool            Online              { get; set; }
                 public string          Status              { get; set; }
                 public Guid            AttendantListId     { get; set; }

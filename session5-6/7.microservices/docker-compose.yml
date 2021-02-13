@@ -119,7 +119,7 @@ services:
     image: meetup-notifications-queries
     restart: always
     ports:
-      - 10000:5000
+      - 10000:80
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       URLS: http://+:80

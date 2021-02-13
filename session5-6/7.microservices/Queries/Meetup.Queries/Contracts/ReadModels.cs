@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Meetup.Queries
+namespace Meetup.Queries.Contracts
 {
     public static class ReadModels
     {

@@ -6,6 +6,7 @@ using System.Net.Http.Json;
 using System.Threading.Tasks;
 using Meetup.GroupManagement.Contracts.Queries.V1;
 using Meetup.Notifications.Queries.Contracts.V1;
+using Meetup.Queries.Contracts;
 using Meetup.UserProfile.Contracts;
 using Microsoft.AspNetCore.Mvc;
 using static MeetupEvents.Contracts.ReadModels.V1;
@@ -37,8 +38,8 @@ namespace Meetup.Queries
             {
                 case V1.GetMeetupGroup groupQuery:
                     // parallel get
-                    var group        = GetGroup(groupQuery.Group);
-                    var meetupEvents = GetMeetupEvents(groupQuery.Group);
+                    var group        = GetGroup(groupQuery.GroupId);
+                    var meetupEvents = GetMeetupEvents(groupQuery.GroupId);
                     await Task.WhenAll(group, meetupEvents);
 
                     return new ObjectResult(
@@ -51,7 +52,7 @@ namespace Meetup.Queries
 
                 case V1.GetMeetupEvent eventQuery:
                     // parallel get
-                    var meetupGroup = GetGroup(eventQuery.Group);
+                    var meetupGroup = GetGroup(eventQuery.GroupId);
                     var meetupEvent = GetMeetupEvent(eventQuery);
                     await Task.WhenAll(meetupEvent, meetupGroup);
 
@@ -88,32 +89,32 @@ namespace Meetup.Queries
 
         ReadModels.V1.Event Map(MeetupEvent source)
             => new(source.Id.ToString(), source.Title, source.Description, source.Capacity, source.Status, source.Start,
-                source.End, source.Location, source.Online);
+                source.End, source.Online ? source.Url : source.Address, source.Online);
 
         ReadModels.V1.Group Map(GetGroup.Types.Group source)
             => new(source.Id, source.Title, source.Description);
 
         async Task<MeetupEvent> GetMeetupEvent(V1.GetMeetupEvent query)
         {
-            var queryResponse = await SchedulingClient.GetAsync($"api/meetup/{query.Group}/events/{query.EventId}");
+            var queryResponse = await SchedulingClient.GetAsync($"api/meetup/events/{query.EventId}");
             queryResponse.EnsureSuccessStatusCode();
 
             var queryResult = await queryResponse.Content.ReadFromJsonAsync<MeetupEvent>();
             return queryResult;
         }
 
-        async Task<IEnumerable<MeetupEvent>> GetMeetupEvents(string group)
+        async Task<IEnumerable<MeetupEvent>> GetMeetupEvents(Guid groupId)
         {
-            var queryResponse = await SchedulingClient.GetAsync($"api/meetup/{group}/");
+            var queryResponse = await SchedulingClient.GetAsync($"api/meetup/{groupId}/");
             queryResponse.EnsureSuccessStatusCode();
 
             var queryResult = await queryResponse.Content.ReadFromJsonAsync<IEnumerable<MeetupEvent>>();
             return queryResult;
         }
 
-        async Task<GetGroup.Types.Group> GetGroup(string group)
+        async Task<GetGroup.Types.Group> GetGroup(Guid groupId)
         {
-            var result = await GroupClient.GetAsync(new GetGroup {GroupSlug = group});
+            var result = await GroupClient.GetAsync(new GetGroup {GroupId = groupId.ToString()});
             return result.Group;
         }
 

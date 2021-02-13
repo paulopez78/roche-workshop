@@ -13,7 +13,7 @@ using MeetupEvents.Application.AttendantList;
 using MeetupEvents.Application.Meetup;
 using MeetupEvents.Infrastructure;
 using OpenTelemetry.Trace;
-using static MeetupEvents.Application.AttendantList.DomainServices;
+using static MeetupEvents.Contracts.AttendantListCommands.V1;
 using static MeetupEvents.Program;
 
 namespace MeetupEvents
@@ -38,7 +38,11 @@ namespace MeetupEvents
             services.AddScoped<ApplicationServiceBuilder<MeetupEventsApplicationService>>();
 
             services.AddSingleton<GetMappedId>(id =>
-                GetAttendantListId(() => new NpgsqlConnection(connectionString), id)
+                DomainServices.GetAttendantListId(() => new NpgsqlConnection(connectionString), id)
+            );
+
+            services.AddSingleton<GetAttendingMeetups>((groupId, memberId) =>
+                DomainServices.GetAttendingMeetups(() => new NpgsqlConnection(connectionString), groupId, memberId)
             );
 
             services.AddHostedService<OutboxProcessor>();
@@ -62,12 +66,16 @@ namespace MeetupEvents
                         r.Ignore<ArgumentException>();
                     });
 
-                    cfg.ReceiveEndpoint($"{ApplicationKey}-commands",
+                    var endpointName  = $"{ApplicationKey}-commands";
+                    cfg.ReceiveEndpoint(endpointName,
                         e =>
                         {
                             e.Consumer<AttendantListMassTransitConsumer>(context);
                             e.Consumer<MeetupEventsMassTransitConsumer>(context);
                         });
+                    
+                    var endpointQueue = new Uri($"queue:{endpointName}");
+                    EndpointConvention.Map<CancelAttendance>(endpointQueue);
                 });
             });
             services.AddMassTransitHostedService();

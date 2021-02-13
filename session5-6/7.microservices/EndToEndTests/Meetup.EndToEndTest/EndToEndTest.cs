@@ -62,7 +62,7 @@ namespace Meetup.EndToEndTest
             await Task.Delay(5_000);
 
             await Fixture.MeetupSchedulingCommands
-                .ReduceCapacity(MicroservicesMeetup, byNumber: 7);
+                .ReduceCapacity(MicroservicesMeetup, byNumber: 8);
 
             await Fixture.MeetupSchedulingCommands
                 .Attend(MicroservicesMeetup,
@@ -96,6 +96,7 @@ namespace Meetup.EndToEndTest
 
             meetup.Waiting(Joe).Should().BeTrue();
             meetup.Going(Carla).Should().BeTrue();
+            meetup.NotGoing(Alice).Should().BeTrue();
             meetup.Going(Bob).Should().BeTrue();
 
             await Fixture.Notifications

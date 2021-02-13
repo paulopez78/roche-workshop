@@ -31,8 +31,11 @@ namespace Meetup.GroupManagement.Application
 
             var member = new GroupMember
             {
-                GroupId = request.GroupId, UserId = request.UserId, JoinedAt = DateTimeOffset.UtcNow,
-                Status  = MemberStatus.Active
+                GroupId  = request.GroupId,
+                UserId   = request.UserId,
+                Role     = request.Role,
+                Status   = MemberStatus.Active,
+                JoinedAt = DateTimeOffset.UtcNow
             };
 
             await DbContext.Members.AddAsync(member, cancellationToken);

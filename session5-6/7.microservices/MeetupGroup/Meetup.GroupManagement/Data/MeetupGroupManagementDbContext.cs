@@ -1,6 +1,7 @@
 using Meetup.GroupManagement.Middleware;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 namespace Meetup.GroupManagement.Data
@@ -21,12 +22,15 @@ namespace Meetup.GroupManagement.Data
                 //https://docs.microsoft.com/en-us/ef/core/modeling/concurrency?tabs=data-annotations
                 //https://www.npgsql.org/efcore/modeling/concurrency.html
                 b.HasIndex(p => p.Slug).IsUnique();
+                b.Property(p => p.Status).HasConversion(new EnumToStringConverter<GroupStatus>());
                 b.UseXminAsConcurrencyToken();
             });
 
             modelBuilder.Entity<GroupMember>(b =>
             {
                 b.UseXminAsConcurrencyToken();
+                b.Property(p => p.Role).HasConversion(new EnumToStringConverter<Role>());
+                b.Property(p => p.Status).HasConversion(new EnumToStringConverter<MemberStatus>());
                 b.HasIndex(p => p.GroupId);
                 b.HasIndex(p => new {p.GroupId, p.UserId}).IsUnique();
             });
