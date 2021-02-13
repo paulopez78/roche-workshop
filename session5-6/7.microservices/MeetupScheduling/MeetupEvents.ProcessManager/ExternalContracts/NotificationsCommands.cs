@@ -15,7 +15,7 @@ namespace Meetup.Notifications.Contracts
             public record NotifyMemberLeft(Guid GroupId, Guid MemberId);
 
             public record NotifyMeetupPublished(Guid MeetupId, Guid GroupId);
-
+            
             public record NotifyMeetupCancelled(Guid MeetupId, Guid GroupId, string Message);
 
             public record NotifyMeetupAttendantWaiting(Guid MeetupId, Guid AttendantId);
