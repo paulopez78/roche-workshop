@@ -16,6 +16,9 @@ namespace MeetupEvents.Domain
 
         readonly List<Attendant>        _attendants = new();
         public   IEnumerable<Attendant> Attendants => _attendants.OrderBy(x => x.AddedAt);
+        IEnumerable<Attendant>          Going      => Attendants.Where(x => !x.Waiting);
+        IEnumerable<Attendant>          Waiting    => Attendants.Where(x => x.Waiting);
+        Attendant? GetAttendant(Guid attendantId) => Attendants.FirstOrDefault(x => x.MemberId == attendantId);
 
         public void Create(Guid id, Details details, PositiveNumber capacity)
         {
@@ -111,18 +114,22 @@ namespace MeetupEvents.Domain
             EnforceAttending();
             EnforcePublished();
 
-            _attendants.RemoveAll(x => x.MemberId == memberId);
+            var attendant = GetAttendant(memberId)!;
+            _attendants.Remove(attendant);
 
             UpdateWaitingList();
 
             void EnforceAttending()
             {
-                if (Attendants.All(x => x.MemberId != memberId))
-                    throw new InvalidOperationException($"Member {memberId} not attending");
+                if (GetAttendant(memberId) is null)
+                    throw new InvalidOperationException($"Member {memberId} is not attending");
             }
 
-            void UpdateWaitingList() =>
+            void UpdateWaitingList()
+            {
+                if (attendant.Waiting) return;
                 Attendants.FirstOrDefault(x => x.Waiting)?.Attend();
+            }
         }
 
         public void ReduceCapacity(PositiveNumber byNumber)
@@ -133,11 +140,12 @@ namespace MeetupEvents.Domain
             UpdateWaitingList();
 
             void UpdateWaitingList() =>
-                Attendants
-                    .Where(x => !x.Waiting)
-                    .TakeLast(byNumber)
-                    .ToList()
+                Going
+                    .TakeLast(LostSpots()).ToList()
                     .ForEach(x => x.Wait());
+
+            int LostSpots() =>
+                Going.Count() - Capacity;
         }
 
         public void IncreaseCapacity(PositiveNumber byNumber)
@@ -148,8 +156,7 @@ namespace MeetupEvents.Domain
             UpdateWaitingList();
 
             void UpdateWaitingList() =>
-                Attendants
-                    .Where(x => x.Waiting)
+                Waiting
                     .Take(byNumber)
                     .ToList()
                     .ForEach(x => x.Attend());
