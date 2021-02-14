@@ -7,11 +7,15 @@ namespace MeetupEvents.Domain
 {
     public class AttendantListAggregate : Aggregate
     {
+        public Guid                MeetupEventId { get; private set; }
+        public PositiveNumber      Capacity      { get; private set; } = 0;
+        public AttendantListStatus Status        { get; private set; } = AttendantListStatus.None;
+
         readonly List<Attendant>        _attendants = new();
-        public   IEnumerable<Attendant> Attendants    => _attendants;
-        public   Guid                   MeetupEventId { get; private set; }
-        public   PositiveNumber         Capacity      { get; private set; } = 0;
-        public   AttendantListStatus    Status        { get; private set; } = AttendantListStatus.None;
+        public   IEnumerable<Attendant> Attendants => _attendants.OrderBy(x => x.AddedAt);
+        IEnumerable<Attendant>          Going      => Attendants.Where(x => !x.Waiting);
+        IEnumerable<Attendant>          Waiting    => Attendants.Where(x => x.Waiting);
+        Attendant? GetAttendant(Guid attendantId) => Attendants.FirstOrDefault(x => x.MemberId == attendantId);
 
         public void Create(Guid id, Guid meetupEventId, PositiveNumber capacity)
         {
@@ -58,28 +62,33 @@ namespace MeetupEvents.Domain
 
             void EnforceNotAttending()
             {
-                if (Attendants.Any(x => x.MemberId == memberId))
+                if (GetAttendant(memberId) is not null)
                     throw new InvalidOperationException($"Member {memberId} already attending");
             }
         }
 
         public void CancelAttendance(Guid memberId)
         {
-            EnforceAttending();
             EnforceOpened();
+            EnforceAttending();
 
-            _attendants.RemoveAll(x => x.MemberId == memberId);
+            var attendant = GetAttendant(memberId)!;
+
+            _attendants.Remove(attendant!);
 
             UpdateWaitingList();
 
             void EnforceAttending()
             {
-                if (Attendants.All(x => x.MemberId != memberId))
-                    throw new InvalidOperationException($"Member {memberId} not attending");
+                if (GetAttendant(memberId) is null)
+                    throw new InvalidOperationException($"Member {memberId} is not attending");
             }
 
-            void UpdateWaitingList() =>
+            void UpdateWaitingList()
+            {
+                if (attendant.Waiting) return;
                 Attendants.FirstOrDefault(x => x.Waiting)?.Attend();
+            }
         }
 
         public void ReduceCapacity(PositiveNumber byNumber)
@@ -87,14 +96,12 @@ namespace MeetupEvents.Domain
             EnforceActive();
 
             Capacity -= byNumber;
-            UpdateWaitingList();
 
-            void UpdateWaitingList() =>
-                Attendants
-                    .Where(x => !x.Waiting)
-                    .TakeLast(byNumber)
-                    .ToList()
-                    .ForEach(x => x.Wait());
+            Going.TakeLast(LostSpots())
+                .ToList().ForEach(x => x.Wait());
+
+            PositiveNumber LostSpots() =>
+                Going.Count() - Capacity;
         }
 
         public void IncreaseCapacity(PositiveNumber byNumber)
@@ -102,28 +109,23 @@ namespace MeetupEvents.Domain
             EnforceActive();
 
             Capacity += byNumber;
-            UpdateWaitingList();
 
-            void UpdateWaitingList() =>
-                Attendants
-                    .Where(x => x.Waiting)
-                    .Take(byNumber)
-                    .ToList()
-                    .ForEach(x => x.Attend());
+            Waiting.Take(byNumber)
+                .ToList().ForEach(x => x.Attend());
         }
-        
+
         void EnforceNotCreated() =>
             EnforceStatusMustBe(AttendantListStatus.None);
-        
+
         void EnforceOpened() =>
             EnforceStatusMustBe(AttendantListStatus.Opened);
-        
+
         void EnforceActive()
         {
             if (Status == AttendantListStatus.Archived)
                 throw new InvalidOperationException("Not active attendant list");
         }
-        
+
         void EnforceStatusMustBe(AttendantListStatus status)
         {
             if (Status != status)
