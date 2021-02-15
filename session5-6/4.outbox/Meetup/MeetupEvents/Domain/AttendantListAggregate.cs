@@ -83,7 +83,7 @@ namespace MeetupEvents.Domain
             EnforceOpened();
             EnforceAttending();
 
-            var notGoingAttendant = Attendant(memberId);
+            var notGoingAttendant = Attendant(memberId)!;
 
             _attendants.Remove(notGoingAttendant!);
             _changes.Add(new AttendantRemoved(Id, memberId));

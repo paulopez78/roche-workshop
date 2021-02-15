@@ -18,7 +18,7 @@ namespace MeetupEvents.Application.AttendantList
         readonly IApplicationService _applicationService;
 
         public AttendantListMassTransitConsumer(ApplicationServiceBuilder<AttendantListApplicationService> builder) =>
-            _applicationService = builder.Build();
+            _applicationService = builder.WithOutbox().WithExceptionLogging().Build();
 
         public Task Consume(ConsumeContext<MeetupCreated> context)
         {

@@ -110,19 +110,22 @@ namespace MeetupEvents.Test
             var meetupId = NewGuid();
 
             await CreateMeetup(meetupId);
+            // eventual consistency, we should retry till is attendant list is opened
+            await Task.Delay(1000);
+            
             await Schedule(meetupId);
             await MakeOnline(meetupId);
             await Publish(meetupId);
-            await ReduceCapacity(meetupId, byNumber: 8);
 
             // eventual consistency, we should retry till is attendant list is opened
             await Task.Delay(1000);
 
+            // act
             var bob   = NewGuid();
             var alice = NewGuid();
             var joe   = NewGuid();
-
-            // act
+            
+            await ReduceCapacity(meetupId, byNumber: 8);
             await Task.WhenAll(
                 AttendWithRetry(bob),
                 AttendWithRetry(alice),
@@ -144,6 +147,9 @@ namespace MeetupEvents.Test
             // arrange
             var meetupId = NewGuid();
             await CreateMeetup(meetupId);
+            // eventual consistency, we should retry till is attendant list is opened
+            await Task.Delay(1000);
+            
             await Schedule(meetupId);
             await MakeOnline(meetupId);
             await Publish(meetupId);
