@@ -111,32 +111,30 @@ namespace MeetupEvents.Test
             var meetupId = NewGuid();
 
             await CreateMeetup(meetupId);
+            // eventual consistency, we should retry till is attendant list is opened
+            await Task.Delay(1000);
+
             await Schedule(meetupId);
             await MakeOnline(meetupId);
             await Publish(meetupId);
-            await ReduceCapacity(meetupId, byNumber: 8);
-
             // eventual consistency, we should retry till is attendant list is opened
             await Task.Delay(1000);
+
+            await ReduceCapacity(meetupId, byNumber: 8);
 
             var bob   = NewGuid();
             var alice = NewGuid();
             var joe   = NewGuid();
 
             // act
-            await Task.WhenAll(
-                AttendWithRetry(bob),
-                AttendWithRetry(alice),
-                AttendWithRetry(joe)
-            );
+            await Attend(meetupId, bob);
+            await Attend(meetupId, alice);
+            await Attend(meetupId, joe);
 
             // assert 
             var meetup = await Get(meetupId);
             meetup.Attendants.Should().HaveCount(3);
             meetup.Attendants.Count(x => x.Waiting).Should().Be(1);
-
-            Task AttendWithRetry(Guid memberId)
-                => Retry().ExecuteAsync(() => Attend(meetupId, memberId));
         }
 
         [Fact]
@@ -145,6 +143,9 @@ namespace MeetupEvents.Test
             // arrange
             var meetupId = NewGuid();
             await CreateMeetup(meetupId);
+            // eventual consistency, we should retry till is attendant list is opened
+            await Task.Delay(1000);
+
             await Schedule(meetupId);
             await MakeOnline(meetupId);
             await Publish(meetupId);
@@ -156,10 +157,8 @@ namespace MeetupEvents.Test
             var title = "Microservices Benefits";
 
             // act
-            await Task.WhenAll(
-                Attend(meetupId, bob),
-                UpdateDetails(meetupId, title)
-            );
+            await Attend(meetupId, bob);
+            await UpdateDetails(meetupId, title);
 
             // assert 
             var meetup = await Get(meetupId);
